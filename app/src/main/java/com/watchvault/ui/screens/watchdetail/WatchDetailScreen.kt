@@ -1,30 +1,45 @@
 package com.watchvault.ui.screens.watchdetail
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,13 +54,13 @@ import com.watchvault.ui.theme.LocalVaultColors
 import com.watchvault.ui.theme.WatchVaultExtraType
 
 /**
- * Watch detail as one continuous editorial scroll, not colored/filled section cards or tabs:
- * a large photo, brand -> model -> reference in plain typography, a value block, then
- * label/value rows grouped under a small uppercase heading + a 1dp divider (Specs, Ownership,
- * Service, Notes — Notes only rendered when present). All fields shown are the same ones the
- * previous tabbed layout showed; only the presentation changed.
+ * Watch Detail rebuilt as an editorial product page: the photo is the hero (near edge-to-edge,
+ * no toolbar consuming it), back/edit/delete float over the image, and everything below is plain
+ * typography separated by hairline dividers. Only populated fields render anywhere on this
+ * screen — there are no placeholder rows, no raw booleans, no "(assumed)" currency caveats, and
+ * no low-level provenance fields (nickname/source/seller/location/invoice/first-owner) in the
+ * primary flow. Those live behind a collapsed "Provenance" disclosure at the bottom.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WatchDetailScreen(watchUuid: String, onBack: () -> Unit, onEdit: (String) -> Unit) {
     val container = LocalAppContainer.current
@@ -54,52 +69,153 @@ fun WatchDetailScreen(watchUuid: String, onBack: () -> Unit, onEdit: (String) ->
     )
     val details by viewModel.watch.collectAsState()
     val vaultColors = LocalVaultColors.current
+    var menuExpanded by remember { mutableStateOf(false) }
+    var confirmingDelete by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(details?.watch?.let { "${it.brand} ${it.model}" } ?: "Watch") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back") } },
-                actions = {
-                    IconButton(onClick = { onEdit(watchUuid) }) { Icon(Icons.Filled.Edit, contentDescription = "Edit") }
-                }
+    val watch = details?.watch
+    if (watch == null) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            FloatingTopControls(
+                onBack = onBack,
+                menuExpanded = menuExpanded,
+                onMenuToggle = { menuExpanded = it },
+                onEdit = {},
+                onDelete = {},
+                enabled = false
             )
         }
-    ) { padding ->
-        val watch = details?.watch
-        if (watch == null) {
-            Text("Loading…", modifier = Modifier.padding(padding).padding(16.dp))
-            return@Scaffold
-        }
-        val photos = details?.photos ?: emptyList()
-        val primaryPhoto = photos.firstOrNull { it.isPrimary } ?: photos.firstOrNull()
+        return
+    }
+    val photos = details?.photos ?: emptyList()
+    val primaryPhoto = photos.firstOrNull { it.isPrimary } ?: photos.firstOrNull()
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
+    if (confirmingDelete) {
+        AlertDialog(
+            onDismissRequest = { confirmingDelete = false },
+            title = { Text("Delete this watch?") },
+            text = { Text("${watch.brand} ${watch.model} and its records will be permanently removed.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmingDelete = false
+                    viewModel.delete(watch)
+                    onBack()
+                }) { Text("Delete", color = vaultColors.danger) }
+            },
+            dismissButton = { TextButton(onClick = { confirmingDelete = false }) { Text("Cancel") } }
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             WatchPhotoOrPlaceholder(
                 photo = primaryPhoto,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1.2f)
-                    .clip(RoundedCornerShape(12.dp))
+                    .aspectRatio(1f)
             )
+            FloatingTopControls(
+                onBack = onBack,
+                menuExpanded = menuExpanded,
+                onMenuToggle = { menuExpanded = it },
+                onEdit = { onEdit(watchUuid) },
+                onDelete = { confirmingDelete = true },
+                enabled = true
+            )
+        }
 
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
             IdentityBlock(watch)
-
             ValueBlock(watch, vaultColors.gold, vaultColors.success, vaultColors.danger)
 
-            DetailSection(title = "SPECS") { SpecificationsContent(watch) }
-            DetailSection(title = "OWNERSHIP") { OwnershipContent(watch) }
-            DetailSection(title = "SERVICE") { MaintenanceContent(details?.maintenanceRecords ?: emptyList()) }
-            if (!watch.notes.isNullOrBlank()) {
-                DetailSection(title = "NOTES") { Text(watch.notes, style = MaterialTheme.typography.bodyMedium) }
+            val quickFacts = quickFactsLine(watch)
+            if (quickFacts != null) {
+                DividedSection(title = null) {
+                    Text(quickFacts, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                }
             }
+
+            val ownershipRows = ownershipRows(watch)
+            if (ownershipRows.isNotEmpty()) {
+                DividedSection(title = "OWNERSHIP") {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        ownershipRows.forEach { (label, value) -> LabeledRow(label, value) }
+                    }
+                }
+            }
+
+            val records = details?.maintenanceRecords ?: emptyList()
+            DividedSection(title = "SERVICE") { ServiceContent(records, watch.purchaseCurrency) }
+
+            if (!watch.notes.isNullOrBlank()) {
+                DividedSection(title = "NOTES") {
+                    Text(watch.notes, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+
+            val provenanceRows = provenanceRows(watch)
+            if (provenanceRows.isNotEmpty()) {
+                ProvenanceDisclosure(provenanceRows)
+            }
+        }
+    }
+}
+
+@Composable
+private fun FloatingTopControls(
+    onBack: () -> Unit,
+    menuExpanded: Boolean,
+    onMenuToggle: (Boolean) -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    enabled: Boolean
+) {
+    Column(modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars)) {
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            FloatingIconButton(icon = Icons.Filled.ArrowBack, contentDescription = "Back", onClick = onBack)
+            if (enabled) {
+                Box {
+                    FloatingIconButton(icon = Icons.Filled.MoreVert, contentDescription = "More", onClick = { onMenuToggle(true) })
+                    DropdownMenu(expanded = menuExpanded, onDismissRequest = { onMenuToggle(false) }) {
+                        DropdownMenuItem(
+                            text = { Text("Edit") },
+                            leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
+                            onClick = { onMenuToggle(false); onEdit() }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Delete") },
+                            leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                            onClick = { onMenuToggle(false); onDelete() }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FloatingIconButton(icon: androidx.compose.ui.graphics.vector.ImageVector, contentDescription: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(Color.Black.copy(alpha = 0.35f)),
+        contentAlignment = Alignment.Center
+    ) {
+        IconButton(onClick = onClick) {
+            Icon(icon, contentDescription = contentDescription, tint = Color.White)
         }
     }
 }
@@ -116,30 +232,22 @@ private fun IdentityBlock(watch: Watch) {
 }
 
 @Composable
-private fun ValueBlock(
-    watch: Watch,
-    goldColor: androidx.compose.ui.graphics.Color,
-    successColor: androidx.compose.ui.graphics.Color,
-    dangerColor: androidx.compose.ui.graphics.Color
-) {
+private fun ValueBlock(watch: Watch, goldColor: Color, successColor: Color, dangerColor: Color) {
+    val current = watch.estimatedValue ?: watch.purchasePrice
+    val currentCurrency = watch.estimatedValueCurrency ?: watch.purchaseCurrency
+    if (current == null) return
+
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(
-            formatMoney(watch.estimatedValue, watch.estimatedValueCurrency),
-            style = MaterialTheme.typography.headlineSmall,
-            color = goldColor
-        )
+        Text(formatMoney(current, currentCurrency), style = MaterialTheme.typography.headlineSmall, color = goldColor)
         val purchase = watch.purchasePrice
-        val current = watch.estimatedValue
-        Text(
-            "Purchased ${formatMoney(purchase, watch.purchaseCurrency, watch.purchaseCurrencyAssumed)}",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        if (purchase != null && current != null) {
-            val diff = current - purchase
+        val estimated = watch.estimatedValue
+        if (estimated != null && purchase != null) {
+            val diff = estimated - purchase
+            val percent = if (purchase != 0.0) (diff / purchase) * 100 else null
             val sign = if (diff >= 0) "+" else ""
+            val percentText = percent?.let { " · ${if (it >= 0) "+" else ""}${"%.1f".format(it)}%" } ?: ""
             Text(
-                "$sign${formatMoney(diff, watch.estimatedValueCurrency ?: watch.purchaseCurrency)} since purchase",
+                "$sign${formatMoney(diff, currentCurrency)}$percentText",
                 style = MaterialTheme.typography.bodySmall,
                 color = if (diff >= 0) successColor else dangerColor
             )
@@ -147,81 +255,118 @@ private fun ValueBlock(
     }
 }
 
+/** "AUTOMATIC · 44 MM · GREEN DIAL · STAINLESS STEEL" — only the facts that are actually known,
+ *  joined into one line. Returns null when nothing is known at all. */
+private fun quickFactsLine(watch: Watch): String? {
+    val facts = listOfNotNull(
+        watch.movementNormalized ?: watch.movementRaw,
+        watch.caseDiameterMm?.let { "${it.toInt()} mm" },
+        watch.dialColour,
+        watch.caseMaterial
+    )
+    if (facts.isEmpty()) return null
+    return facts.joinToString(" · ") { it.uppercase() }
+}
+
+private fun ownershipRows(watch: Watch): List<Pair<String, String>> {
+    val rows = mutableListOf<Pair<String, String>>()
+    watch.purchaseDate?.let { rows += "Purchased" to formatDate(it) }
+    watch.purchasePrice?.let { rows += "Price" to formatMoney(it, watch.purchaseCurrency) }
+    watch.conditionRaw?.let { rows += "Condition" to it }
+    boxPapersLabel(watch)?.let { rows += "Box & Papers" to it }
+    return rows
+}
+
+private fun boxPapersLabel(watch: Watch): String? {
+    return when {
+        watch.box == true && watch.papers == true -> "Yes"
+        watch.box == false && watch.papers == false -> "No"
+        watch.box != null || watch.papers != null -> {
+            val parts = mutableListOf<String>()
+            if (watch.box == true) parts += "Box"
+            if (watch.papers == true) parts += "Papers"
+            if (parts.isEmpty()) "No" else parts.joinToString(" + ")
+        }
+        else -> null
+    }
+}
+
 @Composable
-private fun DetailSection(title: String, content: @Composable () -> Unit) {
+private fun ServiceContent(records: List<MaintenanceRecord>, fallbackCurrency: String?) {
+    if (records.isEmpty()) {
+        Text("No service recorded yet.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        return
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        records.sortedByDescending { it.date }.forEach { record ->
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("${record.type?.replaceFirstChar { it.uppercase() } ?: "Service"} — ${formatDate(record.date)}", style = MaterialTheme.typography.bodyMedium)
+                val details = listOfNotNull(
+                    record.technician,
+                    record.cost?.let { formatMoney(it, fallbackCurrency ?: "INR") },
+                    if (record.isOverhaul) "Overhaul" else null,
+                    if (record.pressureTested) "Pressure tested" else null
+                )
+                if (details.isNotEmpty()) {
+                    Text(details.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+private fun provenanceRows(watch: Watch): List<Pair<String, String>> {
+    val rows = mutableListOf<Pair<String, String>>()
+    watch.nickname?.let { rows += "Nickname" to it }
+    watch.seller?.let { rows += "Seller" to it }
+    watch.purchaseLocation?.let { rows += "Purchase location" to it }
+    watch.invoiceNumber?.let { rows += "Invoice number" to it }
+    watch.isFirstOwner?.let { rows += "First owner" to if (it) "Yes" else "No" }
+    if (watch.source == "myinnos_import") rows += "Imported from" to "MyInnos Watch Collection"
+    return rows
+}
+
+@Composable
+private fun ProvenanceDisclosure(rows: List<Pair<String, String>>) {
+    var expanded by remember { mutableStateOf(false) }
     val vaultColors = LocalVaultColors.current
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(title, style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
         HorizontalDivider(color = vaultColors.border, thickness = 1.dp)
+        Text(
+            if (expanded) "PROVENANCE ▴" else "PROVENANCE ▾",
+            style = WatchVaultExtraType.metadata,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
+                .clickable { expanded = !expanded }
+        )
+        if (expanded) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                rows.forEach { (label, value) -> LabeledRow(label, value) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DividedSection(title: String?, content: @Composable () -> Unit) {
+    val vaultColors = LocalVaultColors.current
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        HorizontalDivider(color = vaultColors.border, thickness = 1.dp)
+        if (title != null) {
+            Text(title, style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         content()
     }
 }
 
 @Composable
-private fun LabeledValue(label: String, value: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun LabeledRow(label: String, value: String) {
+    androidx.compose.foundation.layout.Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(value, style = MaterialTheme.typography.bodyMedium)
-    }
-}
-
-@Composable
-private fun SpecificationsContent(watch: Watch) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        LabeledValue("Movement", watch.movementNormalized ?: watch.movementRaw ?: "—")
-        LabeledValue("Case", listOfNotNull(watch.caseMaterial, watch.caseColour, watch.caseShape).joinToString(", ").ifBlank { "—" })
-        LabeledValue("Case diameter", watch.caseDiameterMm?.let { "$it mm" } ?: "—")
-        LabeledValue("Dial", listOfNotNull(watch.dialColour, watch.dialType).joinToString(", ").ifBlank { "—" })
-        LabeledValue("Strap", listOfNotNull(watch.strap, watch.strapMaterial, watch.strapColour).joinToString(", ").ifBlank { "—" })
-        LabeledValue("Water resistance", watch.waterResistance ?: "—")
-        LabeledValue("Crystal", watch.crystal ?: "—")
-        LabeledValue("Condition (as recorded)", watch.conditionRaw ?: "—")
-        val boxPapers = when {
-            watch.box == true && watch.papers == true -> "Box + papers"
-            watch.box == false && watch.papers == false -> "Neither"
-            watch.box != null || watch.papers != null -> "Box: ${watch.box?.toString() ?: "unknown"}, Papers: ${watch.papers?.toString() ?: "unknown"}"
-            watch.hasBoxPapersLegacy != null -> "Unknown (legacy record only says: ${watch.hasBoxPapersLegacy})"
-            else -> "Unknown"
-        }
-        LabeledValue("Box / Papers", boxPapers)
-    }
-}
-
-@Composable
-private fun OwnershipContent(watch: Watch) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        LabeledValue("Ownership status", watch.ownershipStatus)
-        LabeledValue("Nickname", watch.nickname ?: "—")
-        LabeledValue("Source", watch.source)
-        LabeledValue("Purchase date", formatDate(watch.purchaseDate))
-        LabeledValue("Seller", watch.seller ?: "—")
-        LabeledValue("Location", watch.purchaseLocation ?: "—")
-        LabeledValue("Invoice number", watch.invoiceNumber ?: "—")
-        LabeledValue("First owner", watch.isFirstOwner?.toString() ?: "Unknown")
-    }
-}
-
-@Composable
-private fun MaintenanceContent(records: List<MaintenanceRecord>) {
-    if (records.isEmpty()) {
-        Text("No maintenance records yet.", style = MaterialTheme.typography.bodyMedium)
-        return
-    }
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        records.forEach { record ->
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("${record.type ?: "Service"} — ${formatDate(record.date)}", style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    listOfNotNull(
-                        record.technician,
-                        record.cost?.let { formatMoney(it, "INR") },
-                        if (record.isOverhaul) "Overhaul" else null,
-                        if (record.pressureTested) "Pressure tested" else null
-                    ).joinToString(" · "),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
     }
 }

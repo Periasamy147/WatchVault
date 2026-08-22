@@ -52,3 +52,37 @@ val md_theme_dark_onSurface = Color(0xFFE4E1E6)
 val md_theme_dark_surfaceVariant = Color(0xFF46464F)
 val md_theme_dark_onSurfaceVariant = Color(0xFFC7C5D0)
 val md_theme_dark_outline = Color(0xFF90909A)
+
+// --- "Vault" premium palette (Phase A theme-v2) ---
+// Restrained, dark, jewel/metal-toned identity for the app: an AMOLED-friendly near-black
+// dark base with a cool functional-blue accent and a warm gold accent reserved for valuation
+// and milestone moments. Offered as a named seed-color option (SeedColor.VAULT) and used as
+// the default swatch for anyone who has never explicitly picked one.
+
+val vault_dark_background = Color(0xFF0E0D0C)
+val vault_dark_surface = Color(0xFF1B1917)
+val vault_dark_surfaceElevated = Color(0xFF24211E)
+val vault_dark_border = Color(0xFF3A3632)
+val vault_dark_onBackground = Color(0xFFF5F2ED)
+val vault_dark_onSurfaceVariant = Color(0xFFB5B0AA)
+val vault_dark_muted = Color(0xFF817B74)
+
+// True AMOLED variant: pure black background, otherwise identical to the dark base.
+val vault_amoled_background = Color(0xFF000000)
+
+// Light-mode counterpart: same relationships (near-white base, dark text) at adjusted tone
+// so Light/Dark/System/AMOLED all stay coherent with the same identity.
+val vault_light_background = Color(0xFFFAF8F4)
+val vault_light_surface = Color(0xFFFFFFFF)
+val vault_light_surfaceElevated = Color(0xFFF1ECE3)
+val vault_light_border = Color(0xFFD9D2C6)
+val vault_light_onBackground = Color(0xFF211E1A)
+val vault_light_onSurfaceVariant = Color(0xFF5B564D)
+val vault_light_muted = Color(0xFF8B8579)
+
+// Functional accents — shared between light/dark; only their container/on-colors adapt.
+val vault_primary = Color(0xFF3F86F5)
+val vault_gold = Color(0xFFC6A15B)
+val vault_success = Color(0xFF62B76A)
+val vault_warning = Color(0xFFD8A84E)
+val vault_danger = Color(0xFFD66B6B)

@@ -79,7 +79,14 @@ fun SettingsScreen(onOpenImportExport: () -> Unit) {
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                 ) {
                     RadioButton(selected = settings.themeMode == mode, onClick = { themeViewModel.setThemeMode(mode) })
-                    Text(mode.name.lowercase().replaceFirstChar { it.uppercase() })
+                    Text(
+                        when (mode) {
+                            ThemeMode.LIGHT -> "Light"
+                            ThemeMode.DARK -> "Dark"
+                            ThemeMode.AMOLED -> "AMOLED (pure black)"
+                            ThemeMode.SYSTEM -> "System"
+                        }
+                    )
                 }
             }
 

@@ -17,3 +17,11 @@ fun formatDate(epochMillis: Long?): String {
     if (epochMillis == null) return "—"
     return SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(Date(epochMillis))
 }
+
+/** Signed percentage, e.g. "+12.4%" or "-3.1%". Returns "—" when there's nothing to divide by. */
+fun formatPercent(value: Double?): String {
+    if (value == null) return "—"
+    val sign = if (value > 0) "+" else ""
+    val formatted = NumberFormat.getNumberInstance(Locale.getDefault()).apply { maximumFractionDigits = 1 }.format(value)
+    return "$sign$formatted%"
+}

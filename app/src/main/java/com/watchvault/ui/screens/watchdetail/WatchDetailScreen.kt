@@ -2,24 +2,26 @@ package com.watchvault.ui.screens.watchdetail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -27,11 +29,19 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.watchvault.data.entity.MaintenanceRecord
 import com.watchvault.data.entity.Watch
+import com.watchvault.data.entity.WatchPhoto
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
 import com.watchvault.ui.common.formatDate
 import com.watchvault.ui.common.formatMoney
+import com.watchvault.ui.theme.LocalVaultColors
 
+/**
+ * Watch detail, presented as a horizontal tab row rather than a long expandable-section scroll.
+ * Tab order — Photo, Identity, Value, Ownership, Specifications, Maintenance, Notes — mirrors
+ * the section order on the Add/Edit form. All fields the screen previously showed are still
+ * shown; only the presentation (tabs vs. stacked expandable cards) changed.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WatchDetailScreen(watchUuid: String, onBack: () -> Unit, onEdit: (String) -> Unit) {
@@ -58,25 +68,37 @@ fun WatchDetailScreen(watchUuid: String, onBack: () -> Unit, onEdit: (String) ->
             return@Scaffold
         }
 
-        LazyColumn(modifier = Modifier.padding(padding).padding(horizontal = 16.dp)) {
-            item { ExpandableSection("Overview") { OverviewContent(watch) } }
-            item { ExpandableSection("Specifications") { SpecificationsContent(watch) } }
-            item { ExpandableSection("Purchase") { PurchaseContent(watch) } }
-            item { ExpandableSection("Valuation") { ValuationContent(watch) } }
-            item { ExpandableSection("Maintenance") { MaintenanceContent(details?.maintenanceRecords ?: emptyList()) } }
-            item { ExpandableSection("Photos") { Text("${details?.photos?.size ?: 0} photo(s) on file.") } }
-            item { ExpandableSection("Notes") { Text(watch.notes ?: "No notes.") } }
-        }
-    }
-}
+        val tabTitles = listOf("Photo", "Identity", "Value", "Ownership", "Specifications", "Maintenance", "Notes")
+        var selectedTab by remember { mutableIntStateOf(0) }
 
-@Composable
-private fun ExpandableSection(title: String, content: @Composable () -> Unit) {
-    var expanded by remember { mutableStateOf(true) }
-    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp), onClick = { expanded = !expanded }) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            if (expanded) content()
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            ScrollableTabRow(selectedTabIndex = selectedTab) {
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index },
+                        text = { Text(title) }
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                when (selectedTab) {
+                    0 -> PhotoContent(details?.photos ?: emptyList())
+                    1 -> OverviewContent(watch)
+                    2 -> ValuationContent(watch)
+                    3 -> PurchaseContent(watch)
+                    4 -> SpecificationsContent(watch)
+                    5 -> MaintenanceContent(details?.maintenanceRecords ?: emptyList())
+                    6 -> Text(watch.notes ?: "No notes.")
+                }
+            }
         }
     }
 }
@@ -86,6 +108,15 @@ private fun LabeledValue(label: String, value: String) {
     Column {
         Text(label, style = MaterialTheme.typography.labelSmall)
         Text(value, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun PhotoContent(photos: List<WatchPhoto>) {
+    if (photos.isEmpty()) {
+        Text("No photos on file yet.")
+    } else {
+        Text("${photos.size} photo(s) on file.")
     }
 }
 
@@ -136,8 +167,16 @@ private fun PurchaseContent(watch: Watch) {
 
 @Composable
 private fun ValuationContent(watch: Watch) {
+    val vaultColors = LocalVaultColors.current
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        LabeledValue("Estimated value", formatMoney(watch.estimatedValue, watch.estimatedValueCurrency))
+        Column {
+            Text("Estimated value", style = MaterialTheme.typography.labelSmall)
+            Text(
+                formatMoney(watch.estimatedValue, watch.estimatedValueCurrency),
+                style = MaterialTheme.typography.headlineSmall,
+                color = vaultColors.gold
+            )
+        }
         LabeledValue("Value source", watch.estimatedValueSource ?: "—")
     }
 }

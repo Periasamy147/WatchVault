@@ -8,10 +8,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
-import com.watchvault.ui.navigation.WatchVaultNavGraph
+import com.watchvault.ui.navigation.WatchVaultApp
 import com.watchvault.ui.theme.ThemeViewModel
 import com.watchvault.ui.theme.WatchVaultTheme
 
@@ -34,8 +33,7 @@ class MainActivity : ComponentActivity() {
                     useDynamicColor = themeSettings.useDynamicColor,
                     seedColor = themeSettings.seedColor
                 ) {
-                    val navController = rememberNavController()
-                    WatchVaultNavGraph(navController = navController)
+                    WatchVaultApp()
                 }
             }
         }

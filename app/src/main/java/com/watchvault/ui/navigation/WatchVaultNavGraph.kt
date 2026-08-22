@@ -6,8 +6,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.watchvault.ui.screens.activity.ActivityScreen
 import com.watchvault.ui.screens.addedit.AddEditWatchScreen
 import com.watchvault.ui.screens.collection.CollectionScreen
+import com.watchvault.ui.screens.discover.DiscoverScreen
 import com.watchvault.ui.screens.home.HomeScreen
 import com.watchvault.ui.screens.importexport.ImportExportScreen
 import com.watchvault.ui.screens.settings.SettingsScreen
@@ -22,7 +24,10 @@ fun WatchVaultNavGraph(navController: NavHostController) {
             HomeScreen(
                 onOpenCollection = { navController.navigate(Routes.COLLECTION) },
                 onOpenWishlist = { navController.navigate(Routes.WISHLIST) },
-                onOpenSettings = { navController.navigate(Routes.SETTINGS) }
+                onOpenDiscover = { navController.navigate(Routes.DISCOVER) },
+                onOpenActivity = { navController.navigate(Routes.ACTIVITY) },
+                onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                onOpenWatch = { uuid -> navController.navigate(Routes.watchDetail(uuid)) }
             )
         }
         composable(Routes.COLLECTION) {
@@ -36,6 +41,12 @@ fun WatchVaultNavGraph(navController: NavHostController) {
                 onOpenAddEdit = { uuid -> navController.navigate(Routes.addEditWish(uuid)) },
                 onWatchCreated = { uuid -> navController.navigate(Routes.watchDetail(uuid)) }
             )
+        }
+        composable(Routes.DISCOVER) {
+            DiscoverScreen(onAddFromUrl = { navController.navigate(Routes.addEditWish()) })
+        }
+        composable(Routes.ACTIVITY) {
+            ActivityScreen(onOpenWatch = { uuid -> navController.navigate(Routes.watchDetail(uuid)) })
         }
         composable(Routes.SETTINGS) {
             SettingsScreen(onOpenImportExport = { navController.navigate(Routes.IMPORT_EXPORT) })

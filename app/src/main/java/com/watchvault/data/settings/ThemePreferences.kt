@@ -10,10 +10,16 @@ import kotlinx.coroutines.flow.map
 
 private val Context.themeDataStore by preferencesDataStore(name = "theme_preferences")
 
-enum class ThemeMode { LIGHT, DARK, SYSTEM }
+/** SYSTEM/LIGHT/DARK behave as before. AMOLED is a 4th explicit dark variant that forces a
+ *  pure-black (#000000) background/surface instead of the near-black Vault dark base — useful
+ *  on OLED/AMOLED panels for battery savings and maximum contrast. */
+enum class ThemeMode { LIGHT, DARK, AMOLED, SYSTEM }
 
-/** Pixel-style seed color swatches offered when dynamic color is off or unavailable. */
+/** Pixel-style seed color swatches offered when dynamic color is off or unavailable.
+ *  VAULT is the premium "watch vault" jewel/metal-toned palette (see ui/theme/Color.kt) and is
+ *  the default swatch for anyone who has never explicitly chosen one. */
 enum class SeedColor(val label: String, val argb: Long) {
+    VAULT("Vault", 0xFF3F86F5),
     BLUE("Blue", 0xFF3B6EF6),
     GREEN("Green", 0xFF1E9E5A),
     PURPLE("Purple", 0xFF7C4DFF),
@@ -26,7 +32,7 @@ enum class SeedColor(val label: String, val argb: Long) {
 
 data class ThemeSettings(
     val useDynamicColor: Boolean = true,
-    val seedColor: SeedColor = SeedColor.BLUE,
+    val seedColor: SeedColor = SeedColor.VAULT,
     val themeMode: ThemeMode = ThemeMode.SYSTEM
 )
 
@@ -43,8 +49,8 @@ class ThemePreferencesRepository(private val context: Context) {
         ThemeSettings(
             useDynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: true,
             seedColor = prefs[Keys.SEED_COLOR]?.let { name ->
-                runCatching { SeedColor.valueOf(name) }.getOrDefault(SeedColor.BLUE)
-            } ?: SeedColor.BLUE,
+                runCatching { SeedColor.valueOf(name) }.getOrDefault(SeedColor.VAULT)
+            } ?: SeedColor.VAULT,
             themeMode = prefs[Keys.THEME_MODE]?.let { name ->
                 runCatching { ThemeMode.valueOf(name) }.getOrDefault(ThemeMode.SYSTEM)
             } ?: ThemeMode.SYSTEM

@@ -31,7 +31,7 @@ import kotlinx.serialization.json.longOrNull
  * Deliberately not reflection-based and not @Serializable-annotated Room entities, so the
  * Phase 1 entity/DAO files stay exactly as designed — this is a pure adapter layer on top.
  *
- * Every JSON file under database/*.json in the backup ZIP is a flat JsonArray of these
+ * Every JSON file under the backup ZIP's database directory is a flat JsonArray of these
  * objects, one per Room row, per BackupFormat's documented contract.
  */
 val backupJson = Json { prettyPrint = false; ignoreUnknownKeys = true }

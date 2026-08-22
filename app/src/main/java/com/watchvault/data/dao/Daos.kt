@@ -42,12 +42,11 @@ interface WatchDao {
     fun observeAllWithDetails(): Flow<List<WatchWithDetails>>
 
     @Query("""
-        SELECT brand || ' ' || model || ' ' || COALESCE(reference_number,'') || ' ' ||
-               COALESCE(serial_number,'') || ' ' || COALESCE(notes,'') AS haystack, uuid
-        FROM watches
-        WHERE haystack LIKE '%' || :query || '%'
+        SELECT uuid FROM watches
+        WHERE (brand || ' ' || model || ' ' || COALESCE(reference_number,'') || ' ' ||
+               COALESCE(serial_number,'') || ' ' || COALESCE(notes,'')) LIKE '%' || :query || '%'
     """)
-    suspend fun searchRaw(query: String): List<Map<String, String>>
+    suspend fun searchUuids(query: String): List<String>
 }
 
 @Dao

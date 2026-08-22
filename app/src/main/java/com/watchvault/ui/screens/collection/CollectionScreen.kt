@@ -45,9 +45,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.watchvault.data.relation.WatchWithDetails
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
-import com.watchvault.ui.common.WatchPhotoOrPlaceholder
+import com.watchvault.ui.common.EmptyState
+import com.watchvault.ui.common.WatchCard
+import com.watchvault.ui.common.WatchCardVariant
 import com.watchvault.ui.common.formatMoney
 import com.watchvault.ui.theme.LocalVaultColors
+import com.watchvault.ui.theme.Spacing
 import com.watchvault.ui.theme.WatchVaultExtraType
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,25 +95,29 @@ fun CollectionScreen(
             }
             FilterBar(filters, viewModel, allWatches)
             if (watches.isEmpty()) {
-                Text(
-                    "No watches yet. Add one, or import your MyInnos backup from Import/Export.",
-                    modifier = Modifier.padding(24.dp)
+                EmptyState(
+                    headline = if (allWatches.isEmpty()) "No watches yet." else "Nothing matches.",
+                    body = if (allWatches.isEmpty())
+                        "Add one, or import your MyInnos backup from Import/Export."
+                    else
+                        "Try clearing your search or filters.",
+                    modifier = Modifier.fillMaxSize()
                 )
             } else if (filters.layout == ViewLayout.GRID) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(Spacing.sm),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                 ) {
                     items(watches, key = { it.watch.uuid }) { details ->
-                        WatchGridCard(details, onClick = { onOpenWatch(details.watch.uuid) })
+                        WatchCollectionCard(details, WatchCardVariant.GRID, onClick = { onOpenWatch(details.watch.uuid) })
                     }
                 }
             } else {
-                LazyColumn(contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LazyColumn(contentPadding = PaddingValues(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
                     items(watches, key = { it.watch.uuid }) { details ->
-                        WatchListRow(details, onClick = { onOpenWatch(details.watch.uuid) })
+                        WatchCollectionCard(details, WatchCardVariant.LIST, onClick = { onOpenWatch(details.watch.uuid) })
                     }
                 }
             }
@@ -127,9 +134,9 @@ private fun PortfolioHeader(
     successColor: androidx.compose.ui.graphics.Color,
     dangerColor: androidx.compose.ui.graphics.Color
 ) {
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-        Text("Total value", style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(formatMoney(currentValue, "INR"), style = MaterialTheme.typography.headlineSmall, color = goldColor)
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.md, vertical = Spacing.sm)) {
+        Text("Total value", style = WatchVaultExtraType.sectionLabel, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(formatMoney(currentValue, "INR"), style = WatchVaultExtraType.priceLarge, color = goldColor)
         if (purchaseValue > 0.0) {
             val gainColor = if (gainLoss >= 0) successColor else dangerColor
             val sign = if (gainLoss >= 0) "+" else ""
@@ -196,77 +203,37 @@ private fun FilterBar(filters: CollectionFilters, viewModel: CollectionViewModel
     }
 }
 
+/** Maps a [WatchWithDetails] to the shared [WatchCard] — one place both the grid and list
+ *  layouts go through, so the price/gain-loss line reads identically in either view. */
 @Composable
-private fun GainLossLine(watch: com.watchvault.data.entity.Watch, successColor: androidx.compose.ui.graphics.Color, dangerColor: androidx.compose.ui.graphics.Color) {
+private fun WatchCollectionCard(details: WatchWithDetails, variant: WatchCardVariant, onClick: () -> Unit) {
+    val watch = details.watch
+    val vaultColors = LocalVaultColors.current
+    val primaryPhoto = details.photos.firstOrNull { it.isPrimary } ?: details.photos.firstOrNull()
+
+    val gainLossText: String?
+    val gainLossColor: androidx.compose.ui.graphics.Color?
     val purchase = watch.purchasePrice
     val current = watch.estimatedValue
-    if (purchase == null || current == null) return
-    val diff = current - purchase
-    val sign = if (diff >= 0) "+" else ""
-    Text(
-        "$sign${formatMoney(diff, watch.estimatedValueCurrency ?: watch.purchaseCurrency)}",
-        style = MaterialTheme.typography.labelSmall,
-        color = if (diff >= 0) successColor else dangerColor
+    if (purchase != null && current != null) {
+        val diff = current - purchase
+        val sign = if (diff >= 0) "+" else ""
+        gainLossText = "$sign${formatMoney(diff, watch.estimatedValueCurrency ?: watch.purchaseCurrency)}"
+        gainLossColor = if (diff >= 0) vaultColors.success else vaultColors.danger
+    } else {
+        gainLossText = null
+        gainLossColor = null
+    }
+
+    WatchCard(
+        photo = primaryPhoto,
+        brand = watch.brand,
+        model = watch.model,
+        variant = variant,
+        primaryValueText = formatMoney(watch.estimatedValue, watch.estimatedValueCurrency),
+        secondaryText = gainLossText,
+        secondaryColor = gainLossColor,
+        modifier = if (variant == WatchCardVariant.GRID) Modifier.fillMaxWidth() else Modifier.fillMaxWidth(),
+        onClick = onClick
     )
-}
-
-@Composable
-private fun WatchGridCard(details: WatchWithDetails, onClick: () -> Unit) {
-    val watch = details.watch
-    val vaultColors = LocalVaultColors.current
-    val primaryPhoto = details.photos.firstOrNull { it.isPrimary } ?: details.photos.firstOrNull()
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, vaultColors.border, RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-    ) {
-        WatchPhotoOrPlaceholder(
-            photo = primaryPhoto,
-            modifier = Modifier.fillMaxWidth().aspectRatio(1f)
-        )
-        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(watch.brand, style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(watch.model, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1)
-            Text(
-                formatMoney(watch.estimatedValue, watch.estimatedValueCurrency),
-                style = MaterialTheme.typography.labelMedium,
-                color = vaultColors.gold
-            )
-            GainLossLine(watch, vaultColors.success, vaultColors.danger)
-        }
-    }
-}
-
-@Composable
-private fun WatchListRow(details: WatchWithDetails, onClick: () -> Unit) {
-    val watch = details.watch
-    val vaultColors = LocalVaultColors.current
-    val primaryPhoto = details.photos.firstOrNull { it.isPrimary } ?: details.photos.firstOrNull()
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, vaultColors.border, RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        WatchPhotoOrPlaceholder(
-            photo = primaryPhoto,
-            modifier = Modifier.fillMaxWidth(0.28f).aspectRatio(1f)
-        )
-        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(watch.brand, style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(watch.model, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1)
-            Text(
-                formatMoney(watch.estimatedValue, watch.estimatedValueCurrency),
-                style = MaterialTheme.typography.labelMedium,
-                color = vaultColors.gold
-            )
-            GainLossLine(watch, vaultColors.success, vaultColors.danger)
-        }
-    }
 }

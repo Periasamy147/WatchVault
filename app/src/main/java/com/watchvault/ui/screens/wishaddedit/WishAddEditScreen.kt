@@ -35,6 +35,7 @@ import com.watchvault.data.entity.WishlistItem
 import com.watchvault.data.urlimport.ExtractedProductData
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
+import com.watchvault.ui.common.ErrorSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -138,15 +139,38 @@ fun WishAddEditScreen(wishUuid: String?, onBack: () -> Unit, onSaved: (String) -
             title = { Text("Fetching…") },
             text = { CircularProgressIndicator() }
         )
-        is UrlImportState.Error -> AlertDialog(
-            onDismissRequest = viewModel::clearUrlImport,
-            confirmButton = {
-                TextButton(onClick = { manualEntryExpanded = true; viewModel.clearUrlImport() }) { Text("Enter manually") }
-            },
-            dismissButton = { TextButton(onClick = viewModel::clearUrlImport) { Text("Try again") } },
-            title = { Text("Couldn't fetch that link") },
-            text = { Text(state.message) }
-        )
+        is UrlImportState.Error -> {
+            val headline = when (state.category) {
+                UrlFetchFailureCategory.BLOCKED -> "Lookup blocked"
+                UrlFetchFailureCategory.NOT_FOUND -> "Page not found"
+                UrlFetchFailureCategory.NETWORK -> "Connection problem"
+                UrlFetchFailureCategory.MALFORMED_URL -> "Invalid link"
+                UrlFetchFailureCategory.UNKNOWN -> "Something went wrong"
+            }
+            if (state.category == UrlFetchFailureCategory.MALFORMED_URL) {
+                // Retrying the same bad URL won't help — just acknowledge and let them fix it.
+                ErrorSheet(
+                    headline = headline,
+                    body = state.message,
+                    onDismiss = viewModel::clearUrlImport,
+                    primaryActionLabel = "OK",
+                    onPrimaryAction = viewModel::clearUrlImport
+                )
+            } else {
+                ErrorSheet(
+                    headline = headline,
+                    body = state.message,
+                    onDismiss = viewModel::clearUrlImport,
+                    primaryActionLabel = "Try Again",
+                    onPrimaryAction = {
+                        viewModel.clearUrlImport()
+                        viewModel.fetchFromUrl(urlToFetch)
+                    },
+                    secondaryActionLabel = "Enter Manually",
+                    onSecondaryAction = { manualEntryExpanded = true; viewModel.clearUrlImport() }
+                )
+            }
+        }
         is UrlImportState.Preview -> UrlPreviewDialog(
             data = state.data,
             onDismiss = viewModel::clearUrlImport,

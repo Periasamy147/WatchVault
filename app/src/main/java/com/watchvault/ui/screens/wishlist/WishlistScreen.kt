@@ -38,8 +38,12 @@ import com.watchvault.data.migration.WishToOwnedConverter
 import com.watchvault.data.relation.WishlistItemWithDetails
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
+import com.watchvault.ui.common.EmptyState
+import com.watchvault.ui.common.WatchCard
+import com.watchvault.ui.common.WatchCardVariant
 import com.watchvault.ui.common.formatMoney
 import com.watchvault.ui.theme.LocalVaultColors
+import com.watchvault.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,12 +62,18 @@ fun WishlistScreen(onOpenAddEdit: (String?) -> Unit, onWatchCreated: (String) ->
         }
     ) { padding ->
         if (items.isEmpty()) {
-            Text("Nothing on your wishlist yet.", modifier = Modifier.padding(padding).padding(24.dp))
+            EmptyState(
+                headline = "Nothing on your wishlist yet.",
+                body = "Add a watch you're chasing and track it toward its target price.",
+                primaryActionLabel = "Add Wish",
+                onPrimaryAction = { onOpenAddEdit(null) },
+                modifier = Modifier.fillMaxSize().padding(padding)
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                contentPadding = PaddingValues(Spacing.sm),
+                verticalArrangement = Arrangement.spacedBy(Spacing.xs)
             ) {
                 items(items, key = { it.item.uuid }) { details ->
                     WishCard(
@@ -111,34 +121,27 @@ private fun WishCard(details: WishlistItemWithDetails, onClick: () -> Unit, onCo
     val primaryPhoto = details.photos.firstOrNull { it.isPrimary } ?: details.photos.firstOrNull()
     val status = wishStatusLabel(item)
 
-    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            com.watchvault.ui.common.WatchPhotoOrPlaceholder(
-                photo = primaryPhoto,
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
+        WatchCard(
+            photo = primaryPhoto,
+            brand = item.brand,
+            model = item.model,
+            variant = WatchCardVariant.LIST,
+            primaryValueText = "Current ${formatMoney(item.currentPrice, item.currency)}",
+            primaryValueColor = vaultColors.gold,
+            secondaryText = "Target ${formatMoney(item.targetPrice, item.currency)}",
+            statusLabel = status,
+            onClick = onClick
+        )
+        if (item.convertedToWatchUuid == null) {
+            TextButton(onClick = onConvert, contentPadding = PaddingValues(start = Spacing.sm)) { Text("Mark as owned") }
+        } else {
+            Text(
+                "Already converted to owned",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = Spacing.sm)
             )
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                    Column {
-                        Text(item.brand, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(item.model, style = MaterialTheme.typography.titleSmall)
-                    }
-                    status?.let {
-                        androidx.compose.material3.AssistChip(onClick = {}, label = { Text(it, style = MaterialTheme.typography.labelSmall) })
-                    }
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("Target ${formatMoney(item.targetPrice, item.currency)}", style = MaterialTheme.typography.bodySmall)
-                    Text("Current ${formatMoney(item.currentPrice, item.currency)}", style = MaterialTheme.typography.bodySmall, color = vaultColors.gold)
-                }
-                if (item.convertedToWatchUuid == null) {
-                    TextButton(onClick = onConvert, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) { Text("Mark as owned") }
-                } else {
-                    Text("Already converted to owned", style = MaterialTheme.typography.labelSmall)
-                }
-            }
         }
     }
 }

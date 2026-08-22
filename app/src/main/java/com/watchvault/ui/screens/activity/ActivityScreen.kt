@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.item
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
@@ -28,9 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
+import com.watchvault.ui.common.EmptyState
 import com.watchvault.ui.common.formatDate
 import com.watchvault.ui.common.formatMoney
 import com.watchvault.ui.theme.LocalVaultColors
+import com.watchvault.ui.theme.Spacing
+import com.watchvault.ui.theme.WatchVaultExtraType
 
 /**
  * Real, working chronological timeline of maintenance across the whole collection — not a
@@ -44,24 +48,33 @@ fun ActivityScreen(onOpenWatch: (String) -> Unit) {
     val viewModel: ActivityViewModel = viewModel(
         factory = GenericViewModelFactory { ActivityViewModel(container.watchRepository) }
     )
-    val entries by viewModel.entries.collectAsState()
+    val groups by viewModel.groups.collectAsState()
 
     Scaffold(topBar = { TopAppBar(title = { Text("Activity") }) }) { padding ->
-        if (entries.isEmpty()) {
-            Column(modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp)) {
-                Text(
-                    "No maintenance records yet. Add one from a watch's detail screen and it will show up here.",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+        if (groups.isEmpty()) {
+            EmptyState(
+                headline = "No activity yet.",
+                body = "Add a service or maintenance record from a watch's detail screen and it will show up here.",
+                modifier = Modifier.fillMaxSize().padding(padding)
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                contentPadding = PaddingValues(Spacing.sm),
+                verticalArrangement = Arrangement.spacedBy(Spacing.xs)
             ) {
-                items(entries, key = { "${it.watchUuid}-${it.record.uuid}" }) { entry ->
-                    ActivityRow(entry, onClick = { onOpenWatch(entry.watchUuid) })
+                groups.forEach { group ->
+                    item(key = "header-${group.label}") {
+                        Text(
+                            group.label.uppercase(),
+                            style = WatchVaultExtraType.sectionLabel,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(vertical = Spacing.xs)
+                        )
+                    }
+                    items(group.entries, key = { "${it.watchUuid}-${it.record.uuid}" }) { entry ->
+                        ActivityRow(entry, onClick = { onOpenWatch(entry.watchUuid) })
+                    }
                 }
             }
         }

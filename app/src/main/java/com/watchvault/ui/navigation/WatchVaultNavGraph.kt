@@ -22,6 +22,7 @@ fun WatchVaultNavGraph(navController: NavHostController) {
         composable(Routes.HOME) {
             HomeScreen(
                 onOpenCollection = { navController.navigate(Routes.COLLECTION) },
+                onOpenWishlist = { navController.navigate(Routes.WISHLIST) },
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 onOpenImportExport = { navController.navigate(Routes.IMPORT_EXPORT) },
                 onAddWatch = { navController.navigate(Routes.addEditWatch()) },

@@ -3,6 +3,7 @@ package com.watchvault.ui.screens.home
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -40,10 +41,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.watchvault.data.relation.WatchWithDetails
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
+import com.watchvault.ui.common.EmptyState
+import com.watchvault.ui.common.WatchCard
+import com.watchvault.ui.common.WatchCardVariant
 import com.watchvault.ui.common.WatchPhotoOrPlaceholder
-import com.watchvault.ui.common.WatchSilhouettePlaceholder
 import com.watchvault.ui.common.formatMoney
 import com.watchvault.ui.theme.LocalVaultColors
+import com.watchvault.ui.theme.Spacing
 import com.watchvault.ui.theme.WatchVaultExtraType
 
 /**
@@ -55,6 +59,7 @@ import com.watchvault.ui.theme.WatchVaultExtraType
 @Composable
 fun HomeScreen(
     onOpenCollection: () -> Unit,
+    onOpenWishlist: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenImportExport: () -> Unit,
     onAddWatch: () -> Unit,
@@ -73,7 +78,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.statusBars)
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                    .padding(horizontal = Spacing.screenH, vertical = Spacing.md),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -89,11 +94,16 @@ fun HomeScreen(
         }
     ) { padding ->
         if (stats.totalWatches == 0) {
-            HomeEmptyState(
-                modifier = Modifier.padding(padding),
-                onAddWatch = onAddWatch,
-                onImport = onOpenImportExport
-            )
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                EmptyState(
+                    headline = "Your collection is waiting.",
+                    body = "Add your first timepiece to begin.",
+                    primaryActionLabel = "Add Watch",
+                    onPrimaryAction = onAddWatch,
+                    secondaryActionLabel = "Import existing collection",
+                    onSecondaryAction = onOpenImportExport
+                )
+            }
             return@Scaffold
         }
 
@@ -102,8 +112,8 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(horizontal = Spacing.screenH),
+            verticalArrangement = Arrangement.spacedBy(Spacing.lg)
         ) {
             CollectionSummaryLine(stats)
 
@@ -115,6 +125,8 @@ fun HomeScreen(
                 recent = stats.recentWatches.drop(1),
                 onOpenWatch = onOpenWatch
             )
+
+            WishlistPreviewLine(stats, onOpenWishlist = onOpenWishlist)
 
             Row(
                 modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenCollection),
@@ -197,72 +209,57 @@ private fun CollectionPreview(
     onOpenWatch: (String) -> Unit
 ) {
     if (recent.isEmpty()) return
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Text(
             "RECENTLY ADDED",
-            style = WatchVaultExtraType.metadata,
+            style = WatchVaultExtraType.sectionLabel,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
         ) {
             recent.forEach { details ->
                 val watch = details.watch
                 val primaryPhoto = details.photos.firstOrNull { it.isPrimary } ?: details.photos.firstOrNull()
-                Column(
-                    modifier = Modifier
-                        .width(120.dp)
-                        .clickable { onOpenWatch(watch.uuid) },
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    WatchPhotoOrPlaceholder(
-                        photo = primaryPhoto,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                    )
-                    Text(watch.brand, style = MaterialTheme.typography.labelMedium, maxLines = 1)
-                    Text(watch.model, style = MaterialTheme.typography.bodySmall, maxLines = 1)
-                }
+                WatchCard(
+                    photo = primaryPhoto,
+                    brand = watch.brand,
+                    model = watch.model,
+                    variant = WatchCardVariant.GRID,
+                    primaryValueText = formatMoney(watch.estimatedValue, watch.estimatedValueCurrency),
+                    modifier = Modifier.width(120.dp),
+                    onClick = { onOpenWatch(watch.uuid) }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun HomeEmptyState(modifier: Modifier = Modifier, onAddWatch: () -> Unit, onImport: () -> Unit) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+private fun WishlistPreviewLine(stats: HomeStats, onOpenWishlist: () -> Unit) {
+    if (stats.wishlistCount == 0) return
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onOpenWishlist),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        WatchSilhouettePlaceholder(modifier = Modifier.size(72.dp).clip(RoundedCornerShape(36.dp)))
-        Column(
-            modifier = Modifier.padding(top = 16.dp, bottom = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
             Text(
-                "Your collection is waiting.",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                "Add your first timepiece to begin.",
-                style = MaterialTheme.typography.bodyMedium,
+                "WISHLIST",
+                style = WatchVaultExtraType.sectionLabel,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            val nearest = stats.nearestWish
+            val subtitle = if (nearest != null) "${nearest.brand} ${nearest.model}" else "${stats.wishlistCount} watched"
+            Text(subtitle, style = MaterialTheme.typography.bodyMedium)
         }
-        Button(onClick = onAddWatch, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-            Text(" Add Watch", modifier = Modifier.padding(start = 4.dp))
-        }
-        OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth().padding(top = 10.dp)) {
-            Text("Import existing collection")
-        }
+        Text(
+            "${stats.wishlistCount} ${if (stats.wishlistCount == 1) "item" else "items"}",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

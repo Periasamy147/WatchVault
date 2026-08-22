@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -32,6 +35,8 @@ import com.watchvault.data.settings.SeedColor
 import com.watchvault.data.settings.ThemeMode
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
+import com.watchvault.ui.common.SectionHeader
+import com.watchvault.ui.theme.Spacing
 import com.watchvault.ui.theme.ThemeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,67 +51,103 @@ fun SettingsScreen(onOpenImportExport: () -> Unit) {
 
     Scaffold(topBar = { TopAppBar(title = { Text("Settings") }) }) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = Spacing.screenH),
+            verticalArrangement = Arrangement.spacedBy(Spacing.lg)
         ) {
-            Text("Appearance", style = MaterialTheme.typography.titleMedium)
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
+                SectionHeader("Appearance")
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(Modifier.weight(1f)) {
-                    Text("Dynamic color (Material You)")
-                    if (!dynamicSupported) Text("Requires Android 12+", style = MaterialTheme.typography.labelSmall)
-                }
-                Switch(
-                    checked = settings.useDynamicColor && dynamicSupported,
-                    enabled = dynamicSupported,
-                    onCheckedChange = themeViewModel::setUseDynamicColor
+                SettingsRow(
+                    label = "Dynamic color (Material You)",
+                    value = if (!dynamicSupported) "Requires Android 12+" else null,
+                    trailing = {
+                        Switch(
+                            checked = settings.useDynamicColor && dynamicSupported,
+                            enabled = dynamicSupported,
+                            onCheckedChange = themeViewModel::setUseDynamicColor
+                        )
+                    }
                 )
-            }
 
-            if (!settings.useDynamicColor || !dynamicSupported) {
-                Text("Seed color")
-                SeedColorGrid(selected = settings.seedColor, onSelect = themeViewModel::setSeedColor)
-            }
+                if (!settings.useDynamicColor || !dynamicSupported) {
+                    SettingsRow(label = "Seed color")
+                    SeedColorGrid(selected = settings.seedColor, onSelect = themeViewModel::setSeedColor)
+                }
 
-            HorizontalDivider()
-            Text("Theme mode", style = MaterialTheme.typography.titleMedium)
-            ThemeMode.values().forEach { mode ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().clickable { themeViewModel.setThemeMode(mode) },
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                ) {
-                    RadioButton(selected = settings.themeMode == mode, onClick = { themeViewModel.setThemeMode(mode) })
-                    Text(
-                        when (mode) {
+                ThemeMode.values().forEach { mode ->
+                    SettingsRow(
+                        label = when (mode) {
                             ThemeMode.LIGHT -> "Light"
                             ThemeMode.DARK -> "Dark"
                             ThemeMode.AMOLED -> "AMOLED (pure black)"
                             ThemeMode.SYSTEM -> "System"
+                        },
+                        onClick = { themeViewModel.setThemeMode(mode) },
+                        trailing = {
+                            RadioButton(selected = settings.themeMode == mode, onClick = { themeViewModel.setThemeMode(mode) })
                         }
                     )
                 }
             }
 
             HorizontalDivider()
-            Text("Data", style = MaterialTheme.typography.titleMedium)
-            Text(
-                "Import, Export, Backup",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.clickable(onClick = onOpenImportExport)
-            )
-            Text(
-                "MyInnos migration, full backup export, and restore live on their own screen.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
+                SectionHeader("Data")
+                SettingsRow(
+                    label = "Import, Export, Backup",
+                    value = "MyInnos migration, full backup export, and restore",
+                    onClick = onOpenImportExport,
+                    showChevron = true
+                )
+            }
 
             HorizontalDivider()
-            Text("About", style = MaterialTheme.typography.titleMedium)
-            Text("WatchVault 1.0.0 — an offline-first, personal wristwatch collection and wishlist app.")
-            Text("No account, no cloud sync, no ads. Your data stays on this device unless you export it.", style = MaterialTheme.typography.bodySmall)
+
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
+                SectionHeader("About")
+                SettingsRow(label = "WatchVault", value = "1.0.0")
+                Text(
+                    "An offline-first, personal wristwatch collection and wishlist app. No account, no cloud sync, no ads. Your data stays on this device unless you export it.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = Spacing.xs)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The one settings-row treatment used across every group (Appearance/Data/About): a label,
+ * optional secondary value line, and either a supplied trailing control or a chevron — consistent
+ * height/padding regardless of which group it's in.
+ */
+@Composable
+private fun SettingsRow(
+    label: String,
+    value: String? = null,
+    onClick: (() -> Unit)? = null,
+    showChevron: Boolean = false,
+    trailing: (@Composable () -> Unit)? = null
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(vertical = Spacing.sm),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.bodyMedium)
+            if (value != null) {
+                Text(value, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        when {
+            trailing != null -> trailing()
+            showChevron -> Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

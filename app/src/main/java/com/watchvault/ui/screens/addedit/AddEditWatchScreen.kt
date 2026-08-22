@@ -35,6 +35,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.watchvault.data.entity.Watch
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
+import com.watchvault.ui.common.PrimaryButton
+import com.watchvault.ui.theme.Radius
+import com.watchvault.ui.theme.Spacing
 
 /**
  * Add/Edit Watch. The only fields required to save are Brand and Model — everything else can be
@@ -106,8 +109,8 @@ fun AddEditWatchScreen(watchUuid: String?, onBack: () -> Unit, onSaved: (String)
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxSize().padding(padding).padding(Spacing.screenH).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
         ) {
             FormSection(title = "Photo", initiallyExpanded = false) {
                 Text(
@@ -222,16 +225,18 @@ private fun saveWatch(
 
 @Composable
 private fun SaveWatchButton(enabled: Boolean, onClick: () -> Unit) {
-    Button(enabled = enabled, onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Text("Save Watch")
-    }
+    PrimaryButton(text = "Save Watch", onClick = onClick, enabled = enabled, modifier = Modifier.fillMaxWidth())
 }
 
 @Composable
 private fun FormSection(title: String, initiallyExpanded: Boolean, content: @Composable () -> Unit) {
     var expanded by remember { mutableStateOf(initiallyExpanded) }
-    Card(modifier = Modifier.fillMaxWidth(), onClick = { expanded = !expanded }) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Card(
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(Radius.card),
+        modifier = Modifier.fillMaxWidth(),
+        onClick = { expanded = !expanded }
+    ) {
+        Column(modifier = Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             Text(
                 if (expanded) "$title ▲" else "$title ▼",
                 style = MaterialTheme.typography.titleMedium

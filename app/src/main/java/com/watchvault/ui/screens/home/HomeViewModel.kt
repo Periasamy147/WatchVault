@@ -3,6 +3,7 @@ package com.watchvault.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.watchvault.data.entity.Watch
+import com.watchvault.data.entity.WishlistItem
 import com.watchvault.data.relation.WatchWithDetails
 import com.watchvault.data.repository.WatchRepository
 import com.watchvault.data.repository.WishlistRepository
@@ -29,7 +30,11 @@ data class HomeStats(
     val featured: WatchWithDetails? = null,
     // A few of the most-recently-added watches (including [featured]) for the "Your Collection"
     // preview strip.
-    val recentWatches: List<WatchWithDetails> = emptyList()
+    val recentWatches: List<WatchWithDetails> = emptyList(),
+    // Nearest-to-target open wish (smallest current-vs-target gap, ties broken by whichever is
+    // already at/under target), for a one-line Wishlist preview on Home. Plain in-memory pick
+    // over already-loaded wishlist data — no new query.
+    val nearestWish: WishlistItem? = null
 )
 
 /**
@@ -61,6 +66,12 @@ class HomeViewModel(
 
         val recentWatches = watchDetails.sortedByDescending { it.watch.createdAt }.take(6)
 
+        val openWishes = wishlist.map { it.item }.filter { it.convertedToWatchUuid == null }
+        val nearestWish = openWishes
+            .filter { it.currentPrice != null && it.targetPrice != null && it.targetPrice > 0 }
+            .minByOrNull { ((it.currentPrice!! - it.targetPrice!!) / it.targetPrice!!).coerceAtLeast(0.0) }
+            ?: openWishes.firstOrNull()
+
         HomeStats(
             totalWatches = watches.size,
             wishlistCount = wishlist.size,
@@ -75,7 +86,8 @@ class HomeViewModel(
             oldestPurchase = watches.filter { it.purchaseDate != null }.minByOrNull { it.purchaseDate!! },
             newestPurchase = watches.filter { it.purchaseDate != null }.maxByOrNull { it.purchaseDate!! },
             featured = recentWatches.firstOrNull(),
-            recentWatches = recentWatches
+            recentWatches = recentWatches,
+            nearestWish = nearestWish
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeStats())
 }

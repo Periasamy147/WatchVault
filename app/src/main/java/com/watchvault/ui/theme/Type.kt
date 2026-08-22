@@ -47,4 +47,17 @@ object WatchVaultExtraType {
         lineHeight = 14.sp,
         letterSpacing = 1.2.sp
     )
+
+    /** Uppercase, letter-spaced section label — same role as [metadata] (which already covers
+     *  this across the app, e.g. "OWNERSHIP", "PROVENANCE"), exposed under a clearer name for new
+     *  call sites that want a section header rather than an inline metadata caption. */
+    val sectionLabel = metadata
+
+    /** Large price/value figure, e.g. a hero valuation or a card's headline price. */
+    val priceLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Bold,
+        fontSize = 30.sp,
+        lineHeight = 36.sp
+    )
 }

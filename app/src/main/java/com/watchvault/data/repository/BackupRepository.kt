@@ -109,18 +109,18 @@ class BackupRepository(
         }
 
         val checksums = buildJsonObject {
-            filesToWrite.forEach { (name, bytes) -> put(name.substringAfterLast('/'), sha256(bytes)) }
+            filesToWrite.forEach { (name, bytes) -> put(name.substringAfterLast('/'), JsonPrimitive(sha256(bytes))) }
         }
         val manifest = buildJsonObject {
-            put("appVersion", "1.0.0")
-            put("backupFormatVersion", BackupFormat.CURRENT_VERSION)
-            put("createdAt", System.currentTimeMillis())
-            put("deviceName", Build.MODEL ?: "unknown-device")
+            put("appVersion", JsonPrimitive("1.0.0"))
+            put("backupFormatVersion", JsonPrimitive(BackupFormat.CURRENT_VERSION))
+            put("createdAt", JsonPrimitive(System.currentTimeMillis()))
+            put("deviceName", JsonPrimitive(Build.MODEL ?: "unknown-device"))
             put("counts", buildJsonObject {
-                put("watches", allWatches.size)
-                put("wishlistItems", wishlistItems.size)
-                put("photos", allPhotoRecords.size)
-                put("maintenanceRecords", allMaintenance.size)
+                put("watches", JsonPrimitive(allWatches.size))
+                put("wishlistItems", JsonPrimitive(wishlistItems.size))
+                put("photos", JsonPrimitive(allPhotoRecords.size))
+                put("maintenanceRecords", JsonPrimitive(allMaintenance.size))
             })
             put("checksums", checksums)
         }
@@ -232,9 +232,9 @@ class BackupRepository(
                         startedAt = System.currentTimeMillis(),
                         completedAt = System.currentTimeMillis(),
                         reportJson = buildJsonObject {
-                            put("watches", watches.size)
-                            put("wishlistItems", wishlist.size)
-                            put("maintenanceRecords", maintenance.size)
+                            put("watches", JsonPrimitive(watches.size))
+                            put("wishlistItems", JsonPrimitive(wishlist.size))
+                            put("maintenanceRecords", JsonPrimitive(maintenance.size))
                         }.toString()
                     )
                 )
@@ -296,10 +296,10 @@ class BackupRepository(
                         startedAt = System.currentTimeMillis(),
                         completedAt = System.currentTimeMillis(),
                         reportJson = buildJsonObject {
-                            put("watches", result.watches.size)
-                            put("photos", resolvedPhotos.size)
-                            put("maintenanceRecords", result.maintenanceRecords.size)
-                            put("priceConflicts", result.priceConflicts.size)
+                            put("watches", JsonPrimitive(result.watches.size))
+                            put("photos", JsonPrimitive(resolvedPhotos.size))
+                            put("maintenanceRecords", JsonPrimitive(result.maintenanceRecords.size))
+                            put("priceConflicts", JsonPrimitive(result.priceConflicts.size))
                         }.toString()
                     )
                 )

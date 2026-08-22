@@ -182,6 +182,7 @@ fun List<JsonObject>.toJsonArray(): JsonArray = JsonArray(this)
 // Number that emit JsonNull when the value is null, so put(...) and putNullable(...) can share them.
 private fun kotlinx.serialization.json.JsonObjectBuilder.put(key: String, value: String) = put(key, JsonPrimitive(value))
 private fun kotlinx.serialization.json.JsonObjectBuilder.put(key: String, value: Boolean) = put(key, JsonPrimitive(value))
+private fun kotlinx.serialization.json.JsonObjectBuilder.put(key: String, value: Int) = put(key, JsonPrimitive(value))
 private fun kotlinx.serialization.json.JsonObjectBuilder.put(key: String, value: Long) = put(key, JsonPrimitive(value))
 private fun kotlinx.serialization.json.JsonObjectBuilder.put(key: String, value: Double) = put(key, JsonPrimitive(value))
 private fun kotlinx.serialization.json.JsonObjectBuilder.putNullable(key: String, value: String?) = put(key, JsonPrimitive(value))

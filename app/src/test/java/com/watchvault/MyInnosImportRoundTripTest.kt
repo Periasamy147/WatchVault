@@ -2,6 +2,7 @@ package com.watchvault
 
 import com.watchvault.data.migration.MyInnosImporter
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.*
 import org.junit.Test

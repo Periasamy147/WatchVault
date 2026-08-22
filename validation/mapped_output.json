@@ -1,0 +1,165 @@
+{
+  "watches": [
+    {
+      "uuid": "ff0a81dd-f86e-4cbf-bc1d-8e1cb0d18af2",
+      "legacyId": 4,
+      "brand": "Samsung",
+      "model": "Galaxy Fit3",
+      "referenceNumber": "SM-R390NZAA",
+      "movementRaw": "Smart / Digital",
+      "movementNormalized": null,
+      "conditionRaw": "New",
+      "ownershipStatus": "Active",
+      "purchaseDate": 1776211200000,
+      "purchasePrice": 2800.0,
+      "purchaseCurrency": "INR",
+      "estimatedValue": 3699.0,
+      "estimatedValueSource": "myinnos_export",
+      "hasBoxPapers": true,
+      "box": null,
+      "papers": null,
+      "isFirstOwner": true,
+      "notes": "SAMSUNG GALAXY FIT3\n\nReference: SM-R390\nModel: Galaxy Fit3\nType: Fitness Tracker\nMovement: Digital / Electronic\nDisplay: 1.6-inch AMOLED\nResolution: 256 \u00d7 402\nBluetooth: 5.3\nOS: FreeRTOS\n\nCASE & BODY\n\u2022 Material: Aluminum\n\u2022 Dimensions: 42.9 \u00d7 28.8 \u00d7 9.9 mm\n\u2022 Weight: 36.8 g\n\nWATER RESISTANCE\n\u2022 5 ATM / 50 m\n\u2022 IP68 dust and fresh-water resistance\n\u2022 Not suitable for diving or high-pressure water activities\n\nBATTERY\n\u2022 Capacity: 208 mAh\n\u2022 Battery: Rechargeable\n\u2022 Samsung-rated battery life: Up to 13 days\n\u2022 65% charge in approximately 30 minutes\n\nSENSORS\n\u2022 Optical Heart Rate Sensor\n\u2022 Accelerometer\n\u2022 Gyro Sensor\n\u2022 Barometer\n\u2022 Light Sensor\n\nFEATURES\n\u2022 Steps\n\u2022 Heart rate\n\u2022 Stress monitoring\n\u2022 Blood oxygen\n\u2022 Sleep tracking\n\u2022 Sleep coaching\n\u2022 100+ workouts\n\u2022 Automatic workout detection\n\u2022 Fall detection\n\u2022 Emergency SOS\n\u2022 Notifications\n\u2022 Music controls\n\u2022 Camera Remote\n\u2022 Find My Phone\n\nLAUNCH\n\u2022 India launch: 23 February 2024\n\nOFFICIAL SAMSUNG:\nhttps://www.samsung.com/in/watches/galaxy-fit/galaxy-fit3-gray-bluetooth-sm-r390nzaainu/",
+      "legacyData": "{\"brand\": \"Samsung\", \"condition\": \"New\", \"galleryUris\": [], \"hasBoxPapers\": true, \"id\": 4, \"isFirstOwner\": true, \"marketValue\": 3699, \"model\": \"Galaxy Fit3\", \"movementType\": \"Smart / Digital\", \"notes\": \"SAMSUNG GALAXY FIT3\\n\\nReference: SM-R390\\nModel: Galaxy Fit3\\nType: Fitness Tracker\\nMovement: Digital / Electronic\\nDisplay: 1.6-inch AMOLED\\nResolution: 256 \\u00d7 402\\nBluetooth: 5.3\\nOS: FreeRTOS\\n\\nCASE & BODY\\n\\u2022 Material: Aluminum\\n\\u2022 Dimensions: 42.9 \\u00d7 28.8 \\u00d7 9.9 mm\\n\\u2022 Weight: 36.8 g\\n\\nWATER RESISTANCE\\n\\u2022 5 ATM / 50 m\\n\\u2022 IP68 dust and fresh-water resistance\\n\\u2022 Not suitable for diving or high-pressure water activities\\n\\nBATTERY\\n\\u2022 Capacity: 208 mAh\\n\\u2022 Battery: Rechargeable\\n\\u2022 Samsung-rated battery life: Up to 13 days\\n\\u2022 65% charge in approximately 30 minutes\\n\\nSENSORS\\n\\u2022 Optical Heart Rate Sensor\\n\\u2022 Accelerometer\\n\\u2022 Gyro Sensor\\n\\u2022 Barometer\\n\\u2022 Light Sensor\\n\\nFEATURES\\n\\u2022 Steps\\n\\u2022 Heart rate\\n\\u2022 Stress monitoring\\n\\u2022 Blood oxygen\\n\\u2022 Sleep tracking\\n\\u2022 Sleep coaching\\n\\u2022 100+ workouts\\n\\u2022 Automatic workout detection\\n\\u2022 Fall detection\\n\\u2022 Emergency SOS\\n\\u2022 Notifications\\n\\u2022 Music controls\\n\\u2022 Camera Remote\\n\\u2022 Find My Phone\\n\\nLAUNCH\\n\\u2022 India launch: 23 February 2024\\n\\nOFFICIAL SAMSUNG:\\nhttps://www.samsung.com/in/watches/galaxy-fit/galaxy-fit3-gray-bluetooth-sm-r390nzaainu/\", \"purchaseDate\": 1776211200000, \"purchasePrice\": 2800, \"referenceNumber\": \"SM-R390NZAA\", \"status\": \"Active\", \"updatedAt\": 1787393282690}",
+      "updatedAt": 1787393282690
+    },
+    {
+      "uuid": "d8f3b784-f1ee-417f-97fa-79b0e5c3e6f2",
+      "legacyId": 3,
+      "brand": "Kenneth Cole",
+      "model": "Green Dial Automatic Watch",
+      "referenceNumber": "KCWGL0013101MN",
+      "movementRaw": "Automatic",
+      "movementNormalized": null,
+      "conditionRaw": "New",
+      "ownershipStatus": "Active",
+      "purchaseDate": 1783814400000,
+      "purchasePrice": 13995.0,
+      "purchaseCurrency": "INR",
+      "estimatedValue": 15085.0,
+      "estimatedValueSource": "myinnos_export",
+      "hasBoxPapers": true,
+      "box": null,
+      "papers": null,
+      "isFirstOwner": true,
+      "notes": "KENNETH COLE GREEN DIAL AUTOMATIC\n\nReference: KCWGL0013101MN\nBrand: Kenneth Cole\nCollection: Automatic\nType: Analog Automatic / Skeleton Dial\n\nSPECIFICATIONS\n\u2022 Movement: Automatic\n\u2022 Dial Color: Green\n\u2022 Case Material: Stainless Steel\n\u2022 Case Size: 44 mm\n\u2022 Case Thickness: 12.7 mm\n\u2022 Case Shape: Round\n\u2022 Crystal: Mineral Glass\n\u2022 Strap: Stainless Steel\n\u2022 Strap Color: Grey\n\u2022 Water Resistance: 30 m / 3 ATM\n\u2022 Functions: Automatic timekeeping\n\u2022 Warranty: 24 months\n\nPURCHASE DETAILS\n\u2022 Purchased from: Helios, Velachery, Chennai\n\u2022 Purchase Date: 12 July 2026\n\u2022 MRP: \u20b919,995\n\u2022 Discount: \u20b96,000\n\u2022 Actual Purchase Price: \u20b913,995\n\u2022 Invoice No: 27HVTS100000194\n\nCURRENT PRICE REFERENCES\n\u2022 Titan: \u20b913,995 (currently out of stock)\n\u2022 Zimson: \u20b919,995\n\u2022 The Watch Factory: \u20b919,995\n\u2022 Lifestyle: \u20b913,996\n\nESTIMATED MARKET VALUE\n\u2022 \u20b919,995\n\nIMPORTANT\n\u2022 Automatic movement \u2014 NOT quartz\n\u2022 Stainless steel case and bracelet\n\u2022 Mineral crystal \u2014 NOT sapphire\n\u2022 30 m water resistance\n\u2022 24-month movement warranty\n\nOFFICIAL / RETAIL REFERENCES\nTitan:\nhttps://www.titan.co.in/product/kenneth-cole-automatic-grey-colour-stainless-steel-strap-watch-for-men-kcwgl0013101mn.html\n\nZimson:\nhttps://zimsonwatches.com/collections/kenneth-cole/products/kenneth-cole-automatic-green-dial-men-44mm-kcwgl0013101mn\n\nThe Watch Factory:\nhttps://watchfactory.in/products/kenneth-cole-green-dial-automatic-watch-for-men-kcwgl0013101mn",
+      "legacyData": "{\"brand\": \"Kenneth Cole\", \"condition\": \"New\", \"galleryUris\": [\"/data/user/0/in.myinnos.watchcollection/files/watch_img_5efe9f43-c406-4c9d-a6c3-1caa3e2a8ff6.jpg\", \"/data/user/0/in.myinnos.watchcollection/files/watch_img_b1ff328f-1645-4129-9c97-3533ee49183b.jpg\"], \"hasBoxPapers\": true, \"id\": 3, \"imageUri\": \"/data/user/0/in.myinnos.watchcollection/files/watch_img_ad12f6b1-202d-4207-b413-63af1a4c0c8f.jpg\", \"isFirstOwner\": true, \"marketValue\": 15085.0, \"model\": \"Green Dial Automatic Watch\", \"movementType\": \"Automatic\", \"notes\": \"KENNETH COLE GREEN DIAL AUTOMATIC\\n\\nReference: KCWGL0013101MN\\nBrand: Kenneth Cole\\nCollection: Automatic\\nType: Analog Automatic / Skeleton Dial\\n\\nSPECIFICATIONS\\n\\u2022 Movement: Automatic\\n\\u2022 Dial Color: Green\\n\\u2022 Case Material: Stainless Steel\\n\\u2022 Case Size: 44 mm\\n\\u2022 Case Thickness: 12.7 mm\\n\\u2022 Case Shape: Round\\n\\u2022 Crystal: Mineral Glass\\n\\u2022 Strap: Stainless Steel\\n\\u2022 Strap Color: Grey\\n\\u2022 Water Resistance: 30 m / 3 ATM\\n\\u2022 Functions: Automatic timekeeping\\n\\u2022 Warranty: 24 months\\n\\nPURCHASE DETAILS\\n\\u2022 Purchased from: Helios, Velachery, Chennai\\n\\u2022 Purchase Date: 12 July 2026\\n\\u2022 MRP: \\u20b919,995\\n\\u2022 Discount: \\u20b96,000\\n\\u2022 Actual Purchase Price: \\u20b913,995\\n\\u2022 Invoice No: 27HVTS100000194\\n\\nCURRENT PRICE REFERENCES\\n\\u2022 Titan: \\u20b913,995 (currently out of stock)\\n\\u2022 Zimson: \\u20b919,995\\n\\u2022 The Watch Factory: \\u20b919,995\\n\\u2022 Lifestyle: \\u20b913,996\\n\\nESTIMATED MARKET VALUE\\n\\u2022 \\u20b919,995\\n\\nIMPORTANT\\n\\u2022 Automatic movement \\u2014 NOT quartz\\n\\u2022 Stainless steel case and bracelet\\n\\u2022 Mineral crystal \\u2014 NOT sapphire\\n\\u2022 30 m water resistance\\n\\u2022 24-month movement warranty\\n\\nOFFICIAL / RETAIL REFERENCES\\nTitan:\\nhttps://www.titan.co.in/product/kenneth-cole-automatic-grey-colour-stainless-steel-strap-watch-for-men-kcwgl0013101mn.html\\n\\nZimson:\\nhttps://zimsonwatches.com/collections/kenneth-cole/products/kenneth-cole-automatic-green-dial-men-44mm-kcwgl0013101mn\\n\\nThe Watch Factory:\\nhttps://watchfactory.in/products/kenneth-cole-green-dial-automatic-watch-for-men-kcwgl0013101mn\", \"purchaseDate\": 1783814400000, \"purchasePrice\": 13995.0, \"referenceNumber\": \"KCWGL0013101MN\", \"status\": \"Active\", \"updatedAt\": 1787393149105}",
+      "updatedAt": 1787393149105
+    },
+    {
+      "uuid": "6ba7369b-d918-4ce3-9c01-c2073ae24f4c",
+      "legacyId": 2,
+      "brand": "Timex",
+      "model": "E Class Chronograph",
+      "referenceNumber": "TWEG19916",
+      "movementRaw": "Quartz",
+      "movementNormalized": null,
+      "conditionRaw": "Like New",
+      "ownershipStatus": "Active",
+      "purchaseDate": 1720915200000,
+      "purchasePrice": 4795.0,
+      "purchaseCurrency": "INR",
+      "estimatedValue": 3357.0,
+      "estimatedValueSource": "myinnos_export",
+      "hasBoxPapers": true,
+      "box": null,
+      "papers": null,
+      "isFirstOwner": true,
+      "notes": "TIMEX E CLASS CHRONOGRAPH\n\nReference: TWEG19916\nCaseback: TWEG19916-B0\nBrand: Timex\nCollection: E Class\nType: Analog Chronograph\nMovement: Quartz / Battery\n\nSPECIFICATIONS\n\u2022 Case Material: Brass\n\u2022 Case Diameter: 44 mm\n\u2022 Case Thickness: 11.5 mm\n\u2022 Case Shape: Round\n\u2022 Dial Color: Blue\n\u2022 Crystal: Mineral Glass\n\u2022 Strap: Brown Leather\n\u2022 Strap Width: 22 mm\n\u2022 Water Resistance: 30 m / 3 ATM\n\u2022 Functions: Chronograph + Day\n\u2022 Country of Origin: India\n\nPRICE \u2014 INDIA\n\u2022 Current observed sale price: \u20b93,357\n\u2022 MRP / Listed price: \u20b94,795\n\nIDENTIFICATION\n\u2022 Caseback marking: TWEG19916-B0\n\u2022 QR/authentication sticker present on my watch\n\nIMPORTANT\n\u2022 Quartz, NOT automatic\n\u2022 Battery powered\n\u2022 Mineral crystal, NOT sapphire\n\u2022 30 m water resistance\n\nOFFICIAL TIMEX INDIA:\nhttps://shop.timexindia.com/products/timex-men-analaog-blue-round-brass-dial-watch-tweg19916",
+      "legacyData": "{\"brand\": \"Timex\", \"condition\": \"Like New\", \"galleryUris\": [], \"hasBoxPapers\": true, \"id\": 2, \"imageUri\": \"/data/user/0/in.myinnos.watchcollection/files/watch_img_0bd17848-e0b7-43b7-88ed-e2c4e4c465ca.jpg\", \"isFirstOwner\": true, \"marketValue\": 3357.0, \"model\": \"E Class Chronograph\", \"movementType\": \"Quartz\", \"notes\": \"TIMEX E CLASS CHRONOGRAPH\\n\\nReference: TWEG19916\\nCaseback: TWEG19916-B0\\nBrand: Timex\\nCollection: E Class\\nType: Analog Chronograph\\nMovement: Quartz / Battery\\n\\nSPECIFICATIONS\\n\\u2022 Case Material: Brass\\n\\u2022 Case Diameter: 44 mm\\n\\u2022 Case Thickness: 11.5 mm\\n\\u2022 Case Shape: Round\\n\\u2022 Dial Color: Blue\\n\\u2022 Crystal: Mineral Glass\\n\\u2022 Strap: Brown Leather\\n\\u2022 Strap Width: 22 mm\\n\\u2022 Water Resistance: 30 m / 3 ATM\\n\\u2022 Functions: Chronograph + Day\\n\\u2022 Country of Origin: India\\n\\nPRICE \\u2014 INDIA\\n\\u2022 Current observed sale price: \\u20b93,357\\n\\u2022 MRP / Listed price: \\u20b94,795\\n\\nIDENTIFICATION\\n\\u2022 Caseback marking: TWEG19916-B0\\n\\u2022 QR/authentication sticker present on my watch\\n\\nIMPORTANT\\n\\u2022 Quartz, NOT automatic\\n\\u2022 Battery powered\\n\\u2022 Mineral crystal, NOT sapphire\\n\\u2022 30 m water resistance\\n\\nOFFICIAL TIMEX INDIA:\\nhttps://shop.timexindia.com/products/timex-men-analaog-blue-round-brass-dial-watch-tweg19916\", \"purchaseDate\": 1720915200000, \"purchasePrice\": 4795.0, \"referenceNumber\": \"TWEG19916\", \"status\": \"Active\", \"updatedAt\": 1787393047236}",
+      "updatedAt": 1787393047236
+    },
+    {
+      "uuid": "9c14b6f2-3ef8-45e3-a71b-bc06974b4ff4",
+      "legacyId": 1,
+      "brand": "Timex",
+      "model": "The Waterbury Chronograph",
+      "referenceNumber": "TW2P84200",
+      "movementRaw": "Quartz",
+      "movementNormalized": null,
+      "conditionRaw": "Good",
+      "ownershipStatus": "Active",
+      "purchaseDate": 1583884800000,
+      "purchasePrice": 11302.0,
+      "purchaseCurrency": "INR",
+      "estimatedValue": 6795.0,
+      "estimatedValueSource": "myinnos_export",
+      "hasBoxPapers": true,
+      "box": null,
+      "papers": null,
+      "isFirstOwner": true,
+      "notes": "TIMEX THE WATERBURY CHRONOGRAPH\n\nReference: TW2P84200\nCollection: The Waterbury\nMovement: Quartz / Battery\nBattery: CR2016 (marked on my watch caseback)\nEstimated battery life: ~2 years (model specification; actual life varies with usage)\n\nCASE & DESIGN\n\u2022 Case material: Stainless steel\n\u2022 Case colour: Silver / stainless steel\n\u2022 Case shape: Round\n\u2022 Case diameter: 42 mm\n\u2022 Case thickness: ~13 mm\n\u2022 Lug width: 22 mm\n\u2022 Caseback: Stainless steel\n\u2022 Crystal: Mineral\n\u2022 Dial: Beige / cream\n\u2022 Display: Analog\n\u2022 Strap: Brown/tan genuine leather\n\u2022 Clasp: Stainless-steel buckle\n\u2022 Approx. weight: 77 g\n\nWATER RESISTANCE\n\u2022 50 m / 5 ATM / 5 BAR\n\u2022 Suitable for everyday splashes and washing, but not recommended for swimming.\n\u2022 Do not operate the chronograph pushers while the watch is wet.\n\nFUNCTIONS\n\u2022 Chronograph\n\u2022 Date display\n\u2022 INDIGLO Night-Light\n\u2022 Quick Date function\n\u2022 Chronograph measurement: 1/20 second\n\u2022 Chronograph capacity: up to 30 minutes\n\nIDENTIFICATION\n\u2022 Brand: Timex\n\u2022 Model: The Waterbury Chronograph\n\u2022 Reference: TW2P84200\n\u2022 EAN: 0753048615209\n\u2022 Country/heritage: American Timex / Waterbury collection\n\u2022 Original collection branding: \"The Waterbury Since 1854\"\n\u2022 Caseback markings include: ORIGINALS \u2013 INDIGLO \u2013 WATER RESISTANT 5 ATM \u2013 STAINLESS STEEL\n\nREFERENCE SOURCES\n\u2022 NY Watch Store \u2014 TW2P84200 specifications\n\u2022 Zegarek.net \u2014 TW2P84200 specifications and battery-life information\n\u2022 Watchard \u2014 TW2P84200 product/specification page\n\u2022 LuxTime \u2014 TW2P84200 specifications\n\u2022 Jamtangan \u2014 TW2P84200 product specifications\n\nIMPORTANT\n\u2022 CR2016 is the battery type observed on my actual watch.\n\u2022 Quartz, NOT automatic.\n\u2022 Chronograph + Date are the main complications.\n\u2022 Mineral crystal, not sapphire.\n\u2022 Preserve original photos, purchase information, box/papers and service/battery records with this watch.",
+      "legacyData": "{\"brand\": \"Timex\", \"condition\": \"Good\", \"galleryUris\": [\"/data/user/0/in.myinnos.watchcollection/files/watch_img_5d4031e3-2a29-44c6-be1c-283ad083ac2e.jpg\"], \"hasBoxPapers\": true, \"id\": 1, \"imageUri\": \"/data/user/0/in.myinnos.watchcollection/files/watch_img_288518ab-d581-4882-ae93-f9862c65635c.jpg\", \"isFirstOwner\": true, \"marketValue\": 6795, \"model\": \"The Waterbury Chronograph\", \"movementType\": \"Quartz\", \"notes\": \"TIMEX THE WATERBURY CHRONOGRAPH\\n\\nReference: TW2P84200\\nCollection: The Waterbury\\nMovement: Quartz / Battery\\nBattery: CR2016 (marked on my watch caseback)\\nEstimated battery life: ~2 years (model specification; actual life varies with usage)\\n\\nCASE & DESIGN\\n\\u2022 Case material: Stainless steel\\n\\u2022 Case colour: Silver / stainless steel\\n\\u2022 Case shape: Round\\n\\u2022 Case diameter: 42 mm\\n\\u2022 Case thickness: ~13 mm\\n\\u2022 Lug width: 22 mm\\n\\u2022 Caseback: Stainless steel\\n\\u2022 Crystal: Mineral\\n\\u2022 Dial: Beige / cream\\n\\u2022 Display: Analog\\n\\u2022 Strap: Brown/tan genuine leather\\n\\u2022 Clasp: Stainless-steel buckle\\n\\u2022 Approx. weight: 77 g\\n\\nWATER RESISTANCE\\n\\u2022 50 m / 5 ATM / 5 BAR\\n\\u2022 Suitable for everyday splashes and washing, but not recommended for swimming.\\n\\u2022 Do not operate the chronograph pushers while the watch is wet.\\n\\nFUNCTIONS\\n\\u2022 Chronograph\\n\\u2022 Date display\\n\\u2022 INDIGLO Night-Light\\n\\u2022 Quick Date function\\n\\u2022 Chronograph measurement: 1/20 second\\n\\u2022 Chronograph capacity: up to 30 minutes\\n\\nIDENTIFICATION\\n\\u2022 Brand: Timex\\n\\u2022 Model: The Waterbury Chronograph\\n\\u2022 Reference: TW2P84200\\n\\u2022 EAN: 0753048615209\\n\\u2022 Country/heritage: American Timex / Waterbury collection\\n\\u2022 Original collection branding: \\\"The Waterbury Since 1854\\\"\\n\\u2022 Caseback markings include: ORIGINALS \\u2013 INDIGLO \\u2013 WATER RESISTANT 5 ATM \\u2013 STAINLESS STEEL\\n\\nREFERENCE SOURCES\\n\\u2022 NY Watch Store \\u2014 TW2P84200 specifications\\n\\u2022 Zegarek.net \\u2014 TW2P84200 specifications and battery-life information\\n\\u2022 Watchard \\u2014 TW2P84200 product/specification page\\n\\u2022 LuxTime \\u2014 TW2P84200 specifications\\n\\u2022 Jamtangan \\u2014 TW2P84200 product specifications\\n\\nIMPORTANT\\n\\u2022 CR2016 is the battery type observed on my actual watch.\\n\\u2022 Quartz, NOT automatic.\\n\\u2022 Chronograph + Date are the main complications.\\n\\u2022 Mineral crystal, not sapphire.\\n\\u2022 Preserve original photos, purchase information, box/papers and service/battery records with this watch.\", \"purchaseDate\": 1583884800000, \"purchasePrice\": 11302, \"referenceNumber\": \"TW2P84200\", \"status\": \"Active\", \"updatedAt\": 1787393072833}",
+      "updatedAt": 1787393072833
+    }
+  ],
+  "photos": [
+    {
+      "watchUuid": "d8f3b784-f1ee-417f-97fa-79b0e5c3e6f2",
+      "filename": "watch_img_ad12f6b1-202d-4207-b413-63af1a4c0c8f.jpg",
+      "isPrimary": true,
+      "sortOrder": 0
+    },
+    {
+      "watchUuid": "d8f3b784-f1ee-417f-97fa-79b0e5c3e6f2",
+      "filename": "watch_img_5efe9f43-c406-4c9d-a6c3-1caa3e2a8ff6.jpg",
+      "isPrimary": false,
+      "sortOrder": 0
+    },
+    {
+      "watchUuid": "d8f3b784-f1ee-417f-97fa-79b0e5c3e6f2",
+      "filename": "watch_img_b1ff328f-1645-4129-9c97-3533ee49183b.jpg",
+      "isPrimary": false,
+      "sortOrder": 1
+    },
+    {
+      "watchUuid": "6ba7369b-d918-4ce3-9c01-c2073ae24f4c",
+      "filename": "watch_img_0bd17848-e0b7-43b7-88ed-e2c4e4c465ca.jpg",
+      "isPrimary": true,
+      "sortOrder": 0
+    },
+    {
+      "watchUuid": "9c14b6f2-3ef8-45e3-a71b-bc06974b4ff4",
+      "filename": "watch_img_288518ab-d581-4882-ae93-f9862c65635c.jpg",
+      "isPrimary": true,
+      "sortOrder": 0
+    },
+    {
+      "watchUuid": "9c14b6f2-3ef8-45e3-a71b-bc06974b4ff4",
+      "filename": "watch_img_5d4031e3-2a29-44c6-be1c-283ad083ac2e.jpg",
+      "isPrimary": false,
+      "sortOrder": 0
+    }
+  ],
+  "maintenance": [
+    {
+      "uuid": "225669f2-07ad-4d50-8a72-a4b3119e1530",
+      "watchUuid": "9c14b6f2-3ef8-45e3-a71b-bc06974b4ff4",
+      "legacyServiceId": 2,
+      "date": 1787392096520,
+      "cost": 600.0,
+      "technician": "Zimsons - Phoenix",
+      "description": "Battery installed",
+      "isOverhaul": false,
+      "pressureTested": false
+    }
+  ],
+  "price_conflicts": [
+    {
+      "watchUuid": "d8f3b784-f1ee-417f-97fa-79b0e5c3e6f2",
+      "source": "myinnos_export",
+      "value": 15085.0,
+      "external_value": 13995.0,
+      "external_source": "FINAL_VERIFICATION.txt",
+      "status": "conflicting_not_applied"
+    },
+    {
+      "watchUuid": "9c14b6f2-3ef8-45e3-a71b-bc06974b4ff4",
+      "source": "myinnos_export",
+      "value": 6795.0,
+      "external_value": 6700.0,
+      "external_source": "UPDATED_VALUES.txt",
+      "status": "conflicting_not_applied"
+    }
+  ]
+}

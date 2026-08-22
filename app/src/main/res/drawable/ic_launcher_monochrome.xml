@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Themed-icon (Android 13+) monochrome variant of the WatchVault glyph. The system applies
+  its own tint, so every path uses a single flat color that is ignored except for alpha.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M78,49 L87,49 L87,59 L78,59 Z" />
+
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5.5"
+        android:fillColor="#00000000"
+        android:pathData="M31,54 A23,23 0 1,0 77,54 A23,23 0 1,0 31,54 Z" />
+
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M54,54 L67,54" />
+
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M54,54 L54,39" />
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,50.5 A3.5,3.5 0 1,0 54.01,50.5 Z" />
+</vector>

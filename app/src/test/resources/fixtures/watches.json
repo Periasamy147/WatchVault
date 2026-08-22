@@ -1,0 +1,97 @@
+{
+  "accuracyLogs": [],
+  "backupDate": 1787393313486,
+  "backupVersion": 2,
+  "deviceName": "Pixel 6a",
+  "serviceRecords": [
+    {
+      "cost": 600.0,
+      "createdAt": 1787392114232,
+      "description": "Battery installed",
+      "id": 2,
+      "isOverhaul": false,
+      "pressureTested": false,
+      "serviceDate": 1787392096520,
+      "technician": "Zimsons - Phoenix",
+      "watchId": 1
+    }
+  ],
+  "watches": [
+    {
+      "brand": "Samsung",
+      "condition": "New",
+      "galleryUris": [],
+      "hasBoxPapers": true,
+      "id": 4,
+      "isFirstOwner": true,
+      "marketValue": 3699,
+      "model": "Galaxy Fit3",
+      "movementType": "Smart / Digital",
+      "notes": "SAMSUNG GALAXY FIT3\n\nReference: SM-R390\nModel: Galaxy Fit3\nType: Fitness Tracker\nMovement: Digital / Electronic\nDisplay: 1.6-inch AMOLED\nResolution: 256 × 402\nBluetooth: 5.3\nOS: FreeRTOS\n\nCASE & BODY\n• Material: Aluminum\n• Dimensions: 42.9 × 28.8 × 9.9 mm\n• Weight: 36.8 g\n\nWATER RESISTANCE\n• 5 ATM / 50 m\n• IP68 dust and fresh-water resistance\n• Not suitable for diving or high-pressure water activities\n\nBATTERY\n• Capacity: 208 mAh\n• Battery: Rechargeable\n• Samsung-rated battery life: Up to 13 days\n• 65% charge in approximately 30 minutes\n\nSENSORS\n• Optical Heart Rate Sensor\n• Accelerometer\n• Gyro Sensor\n• Barometer\n• Light Sensor\n\nFEATURES\n• Steps\n• Heart rate\n• Stress monitoring\n• Blood oxygen\n• Sleep tracking\n• Sleep coaching\n• 100+ workouts\n• Automatic workout detection\n• Fall detection\n• Emergency SOS\n• Notifications\n• Music controls\n• Camera Remote\n• Find My Phone\n\nLAUNCH\n• India launch: 23 February 2024\n\nOFFICIAL SAMSUNG:\nhttps://www.samsung.com/in/watches/galaxy-fit/galaxy-fit3-gray-bluetooth-sm-r390nzaainu/",
+      "purchaseDate": 1776211200000,
+      "purchasePrice": 2800,
+      "referenceNumber": "SM-R390NZAA",
+      "status": "Active",
+      "updatedAt": 1787393282690
+    },
+    {
+      "brand": "Kenneth Cole",
+      "condition": "New",
+      "galleryUris": [
+        "/data/user/0/in.myinnos.watchcollection/files/watch_img_5efe9f43-c406-4c9d-a6c3-1caa3e2a8ff6.jpg",
+        "/data/user/0/in.myinnos.watchcollection/files/watch_img_b1ff328f-1645-4129-9c97-3533ee49183b.jpg"
+      ],
+      "hasBoxPapers": true,
+      "id": 3,
+      "imageUri": "/data/user/0/in.myinnos.watchcollection/files/watch_img_ad12f6b1-202d-4207-b413-63af1a4c0c8f.jpg",
+      "isFirstOwner": true,
+      "marketValue": 15085.0,
+      "model": "Green Dial Automatic Watch",
+      "movementType": "Automatic",
+      "notes": "KENNETH COLE GREEN DIAL AUTOMATIC\n\nReference: KCWGL0013101MN\nBrand: Kenneth Cole\nCollection: Automatic\nType: Analog Automatic / Skeleton Dial\n\nSPECIFICATIONS\n• Movement: Automatic\n• Dial Color: Green\n• Case Material: Stainless Steel\n• Case Size: 44 mm\n• Case Thickness: 12.7 mm\n• Case Shape: Round\n• Crystal: Mineral Glass\n• Strap: Stainless Steel\n• Strap Color: Grey\n• Water Resistance: 30 m / 3 ATM\n• Functions: Automatic timekeeping\n• Warranty: 24 months\n\nPURCHASE DETAILS\n• Purchased from: Helios, Velachery, Chennai\n• Purchase Date: 12 July 2026\n• MRP: ₹19,995\n• Discount: ₹6,000\n• Actual Purchase Price: ₹13,995\n• Invoice No: 27HVTS100000194\n\nCURRENT PRICE REFERENCES\n• Titan: ₹13,995 (currently out of stock)\n• Zimson: ₹19,995\n• The Watch Factory: ₹19,995\n• Lifestyle: ₹13,996\n\nESTIMATED MARKET VALUE\n• ₹19,995\n\nIMPORTANT\n• Automatic movement — NOT quartz\n• Stainless steel case and bracelet\n• Mineral crystal — NOT sapphire\n• 30 m water resistance\n• 24-month movement warranty\n\nOFFICIAL / RETAIL REFERENCES\nTitan:\nhttps://www.titan.co.in/product/kenneth-cole-automatic-grey-colour-stainless-steel-strap-watch-for-men-kcwgl0013101mn.html\n\nZimson:\nhttps://zimsonwatches.com/collections/kenneth-cole/products/kenneth-cole-automatic-green-dial-men-44mm-kcwgl0013101mn\n\nThe Watch Factory:\nhttps://watchfactory.in/products/kenneth-cole-green-dial-automatic-watch-for-men-kcwgl0013101mn",
+      "purchaseDate": 1783814400000,
+      "purchasePrice": 13995.0,
+      "referenceNumber": "KCWGL0013101MN",
+      "status": "Active",
+      "updatedAt": 1787393149105
+    },
+    {
+      "brand": "Timex",
+      "condition": "Like New",
+      "galleryUris": [],
+      "hasBoxPapers": true,
+      "id": 2,
+      "imageUri": "/data/user/0/in.myinnos.watchcollection/files/watch_img_0bd17848-e0b7-43b7-88ed-e2c4e4c465ca.jpg",
+      "isFirstOwner": true,
+      "marketValue": 3357.0,
+      "model": "E Class Chronograph",
+      "movementType": "Quartz",
+      "notes": "TIMEX E CLASS CHRONOGRAPH\n\nReference: TWEG19916\nCaseback: TWEG19916-B0\nBrand: Timex\nCollection: E Class\nType: Analog Chronograph\nMovement: Quartz / Battery\n\nSPECIFICATIONS\n• Case Material: Brass\n• Case Diameter: 44 mm\n• Case Thickness: 11.5 mm\n• Case Shape: Round\n• Dial Color: Blue\n• Crystal: Mineral Glass\n• Strap: Brown Leather\n• Strap Width: 22 mm\n• Water Resistance: 30 m / 3 ATM\n• Functions: Chronograph + Day\n• Country of Origin: India\n\nPRICE — INDIA\n• Current observed sale price: ₹3,357\n• MRP / Listed price: ₹4,795\n\nIDENTIFICATION\n• Caseback marking: TWEG19916-B0\n• QR/authentication sticker present on my watch\n\nIMPORTANT\n• Quartz, NOT automatic\n• Battery powered\n• Mineral crystal, NOT sapphire\n• 30 m water resistance\n\nOFFICIAL TIMEX INDIA:\nhttps://shop.timexindia.com/products/timex-men-analaog-blue-round-brass-dial-watch-tweg19916",
+      "purchaseDate": 1720915200000,
+      "purchasePrice": 4795.0,
+      "referenceNumber": "TWEG19916",
+      "status": "Active",
+      "updatedAt": 1787393047236
+    },
+    {
+      "brand": "Timex",
+      "condition": "Good",
+      "galleryUris": [
+        "/data/user/0/in.myinnos.watchcollection/files/watch_img_5d4031e3-2a29-44c6-be1c-283ad083ac2e.jpg"
+      ],
+      "hasBoxPapers": true,
+      "id": 1,
+      "imageUri": "/data/user/0/in.myinnos.watchcollection/files/watch_img_288518ab-d581-4882-ae93-f9862c65635c.jpg",
+      "isFirstOwner": true,
+      "marketValue": 6795,
+      "model": "The Waterbury Chronograph",
+      "movementType": "Quartz",
+      "notes": "TIMEX THE WATERBURY CHRONOGRAPH\n\nReference: TW2P84200\nCollection: The Waterbury\nMovement: Quartz / Battery\nBattery: CR2016 (marked on my watch caseback)\nEstimated battery life: ~2 years (model specification; actual life varies with usage)\n\nCASE & DESIGN\n• Case material: Stainless steel\n• Case colour: Silver / stainless steel\n• Case shape: Round\n• Case diameter: 42 mm\n• Case thickness: ~13 mm\n• Lug width: 22 mm\n• Caseback: Stainless steel\n• Crystal: Mineral\n• Dial: Beige / cream\n• Display: Analog\n• Strap: Brown/tan genuine leather\n• Clasp: Stainless-steel buckle\n• Approx. weight: 77 g\n\nWATER RESISTANCE\n• 50 m / 5 ATM / 5 BAR\n• Suitable for everyday splashes and washing, but not recommended for swimming.\n• Do not operate the chronograph pushers while the watch is wet.\n\nFUNCTIONS\n• Chronograph\n• Date display\n• INDIGLO Night-Light\n• Quick Date function\n• Chronograph measurement: 1/20 second\n• Chronograph capacity: up to 30 minutes\n\nIDENTIFICATION\n• Brand: Timex\n• Model: The Waterbury Chronograph\n• Reference: TW2P84200\n• EAN: 0753048615209\n• Country/heritage: American Timex / Waterbury collection\n• Original collection branding: \"The Waterbury Since 1854\"\n• Caseback markings include: ORIGINALS – INDIGLO – WATER RESISTANT 5 ATM – STAINLESS STEEL\n\nREFERENCE SOURCES\n• NY Watch Store — TW2P84200 specifications\n• Zegarek.net — TW2P84200 specifications and battery-life information\n• Watchard — TW2P84200 product/specification page\n• LuxTime — TW2P84200 specifications\n• Jamtangan — TW2P84200 product specifications\n\nIMPORTANT\n• CR2016 is the battery type observed on my actual watch.\n• Quartz, NOT automatic.\n• Chronograph + Date are the main complications.\n• Mineral crystal, not sapphire.\n• Preserve original photos, purchase information, box/papers and service/battery records with this watch.",
+      "purchaseDate": 1583884800000,
+      "purchasePrice": 11302,
+      "referenceNumber": "TW2P84200",
+      "status": "Active",
+      "updatedAt": 1787393072833
+    }
+  ]
+}

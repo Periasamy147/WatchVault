@@ -16,6 +16,23 @@ no ads.
 
 <p align="center"><b><a href="https://github.com/Periasamy147/WatchVault/releases/latest">⬇️ Download the latest APK from Releases</a></b> — no account, no cloud, install directly.</p>
 
+### Installing the APK
+
+1. Download `WatchVault-latest.apk` from the badge/link above.
+2. Your browser or file manager will ask to allow installing unknown apps for itself — allow it once.
+3. Android Play Protect will likely show an "unrecognized developer" warning before install. This is
+   expected and not a defect: it appears for any APK not distributed through the Play Store,
+   regardless of how it's built or signed. Tap "Install anyway"/"More details → Install anyway" to
+   proceed. The app itself needs no permissions beyond INTERNET (used only for optional URL import).
+
+### Performance
+
+- Requests the display's highest available refresh rate (90Hz/120Hz panels) at startup instead of
+  the OS default of 60Hz.
+- All scrollable lists (Collection, Wishlist, Activity) use stable per-item keys, so scrolling and
+  list edits don't force full-list recomposition.
+- Hardware acceleration is explicit in the manifest (also the platform default).
+
 ## Status
 
 This project was written source-first in a sandbox with **no Android SDK and no Gradle

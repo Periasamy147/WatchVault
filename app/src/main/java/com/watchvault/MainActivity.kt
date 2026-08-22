@@ -1,5 +1,6 @@
 package com.watchvault
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +19,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        requestHighestRefreshRate()
 
         val container = (application as WatchVaultApplication).container
 
@@ -37,5 +39,14 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /** Opts into the display's highest refresh rate (90/120Hz panels) instead of the OS default
+     *  of 60Hz for apps that don't ask. Safe no-op on 60Hz-only hardware. */
+    private fun requestHighestRefreshRate() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
+        val display = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) display else windowManager.defaultDisplay
+        val bestMode = display?.supportedModes?.maxByOrNull { it.refreshRate } ?: return
+        window.attributes = window.attributes.apply { preferredDisplayModeId = bestMode.modeId }
     }
 }

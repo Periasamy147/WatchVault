@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Watch
 import androidx.compose.material3.Icon
@@ -22,11 +23,10 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
-/** The 5 primary destinations shown in the bottom navigation bar. Home is deliberately not one
- *  of these — it stays the app's dashboard/landing screen (see HomeScreen "Dashboard v2"), and
- *  is reached above this bar rather than as a persistent tab, matching the specified 5-tab set:
+/** The 6 primary destinations shown in the bottom navigation bar: Home (dashboard) plus
  *  Collection, Wishlist, Discover, Activity, Settings. */
 enum class BottomNavItem(val route: String, val label: String, val icon: ImageVector) {
+    HOME(Routes.HOME, "Home", Icons.Filled.Home),
     COLLECTION(Routes.COLLECTION, "Collection", Icons.Filled.Watch),
     WISHLIST(Routes.WISHLIST, "Wishlist", Icons.Filled.Favorite),
     DISCOVER(Routes.DISCOVER, "Discover", Icons.Filled.Explore),
@@ -36,9 +36,9 @@ enum class BottomNavItem(val route: String, val label: String, val icon: ImageVe
 
 private val bottomNavRoutes = BottomNavItem.values().map { it.route }.toSet()
 
-/** Top-level app shell: hosts the nav graph and shows the 5-tab bottom navigation bar only on
- *  the 5 primary destinations (Collection/Wishlist/Discover/Activity/Settings). Detail, add/edit
- *  and import/export screens — plus the Home dashboard — render full-screen without the bar. */
+/** Top-level app shell: hosts the nav graph and shows the 6-tab bottom navigation bar on the 6
+ *  primary destinations (Home/Collection/Wishlist/Discover/Activity/Settings). Detail, add/edit
+ *  and import/export screens render full-screen without the bar. */
 @Composable
 fun WatchVaultApp() {
     val navController = rememberNavController()

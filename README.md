@@ -4,6 +4,14 @@ An offline-first, personal wristwatch collection and wishlist app for Android. K
 Jetpack Compose + Material 3, single-module app, Room database, no cloud sync, no account,
 no ads.
 
+<p align="center">
+  <a href="https://github.com/Periasamy147/WatchVault/releases/latest/download/WatchVault-latest.apk">
+    <img alt="Download APK" src="https://img.shields.io/github/v/release/Periasamy147/WatchVault?label=Download%20APK&style=for-the-badge&color=C6A15B&logo=android&logoColor=white">
+  </a>
+</p>
+
+<p align="center"><b><a href="https://github.com/Periasamy147/WatchVault/releases/latest">⬇️ Download the latest APK from Releases</a></b> — no account, no cloud, install directly.</p>
+
 ## Status
 
 This project was written source-first in a sandbox with **no Android SDK and no Gradle

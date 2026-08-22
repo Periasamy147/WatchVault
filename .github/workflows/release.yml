@@ -65,15 +65,23 @@ jobs:
         run: ./gradlew assembleRelease --no-daemon
 
       - name: Stage APK
+        # Two copies of the same file: a versioned one for the release's own asset list, and a
+        # constantly-named one so the README's "latest download" link/badge never has to change.
+        # Every release carries a WatchVault-latest.apk, so /releases/latest/download/... always
+        # resolves to whichever release GitHub currently marks "Latest".
         run: |
           mkdir -p out
           cp app/build/outputs/apk/release/app-release.apk \
              "out/WatchVault-${{ steps.version.outputs.name }}.apk"
+          cp app/build/outputs/apk/release/app-release.apk \
+             "out/WatchVault-latest.apk"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.name }}
           name: WatchVault ${{ steps.version.outputs.name }}
-          files: out/WatchVault-${{ steps.version.outputs.name }}.apk
+          files: |
+            out/WatchVault-${{ steps.version.outputs.name }}.apk
+            out/WatchVault-latest.apk
           generate_release_notes: true

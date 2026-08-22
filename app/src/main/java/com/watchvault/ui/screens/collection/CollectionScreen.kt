@@ -203,27 +203,13 @@ private fun FilterBar(filters: CollectionFilters, viewModel: CollectionViewModel
     }
 }
 
-/** Maps a [WatchWithDetails] to the shared [WatchCard] — one place both the grid and list
- *  layouts go through, so the price/gain-loss line reads identically in either view. */
+/** Maps a [WatchWithDetails] to the shared [WatchCard]. Deliberately just photo/brand/model/
+ *  price — no movement, condition, reference or gain-loss line. Anything more belongs on Watch
+ *  Detail, not the card. */
 @Composable
 private fun WatchCollectionCard(details: WatchWithDetails, variant: WatchCardVariant, onClick: () -> Unit) {
     val watch = details.watch
-    val vaultColors = LocalVaultColors.current
     val primaryPhoto = details.photos.firstOrNull { it.isPrimary } ?: details.photos.firstOrNull()
-
-    val gainLossText: String?
-    val gainLossColor: androidx.compose.ui.graphics.Color?
-    val purchase = watch.purchasePrice
-    val current = watch.estimatedValue
-    if (purchase != null && current != null) {
-        val diff = current - purchase
-        val sign = if (diff >= 0) "+" else ""
-        gainLossText = "$sign${formatMoney(diff, watch.estimatedValueCurrency ?: watch.purchaseCurrency)}"
-        gainLossColor = if (diff >= 0) vaultColors.success else vaultColors.danger
-    } else {
-        gainLossText = null
-        gainLossColor = null
-    }
 
     WatchCard(
         photo = primaryPhoto,
@@ -231,8 +217,8 @@ private fun WatchCollectionCard(details: WatchWithDetails, variant: WatchCardVar
         model = watch.model,
         variant = variant,
         primaryValueText = formatMoney(watch.estimatedValue, watch.estimatedValueCurrency),
-        secondaryText = gainLossText,
-        secondaryColor = gainLossColor,
+        secondaryText = null,
+        secondaryColor = null,
         modifier = if (variant == WatchCardVariant.GRID) Modifier.fillMaxWidth() else Modifier.fillMaxWidth(),
         onClick = onClick
     )

@@ -314,3 +314,25 @@ fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
         Text(text)
     }
 }
+
+/** A scannable two-column specification grid — "Movement  Automatic" beside "Case  Stainless
+ *  steel" on the same row — rather than one full-width label/value row per fact. Only [rows]
+ *  actually passed in render; callers are expected to have already filtered out unknown fields. */
+@Composable
+fun WatchSpecGrid(rows: List<Pair<String, String>>, modifier: Modifier = Modifier) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        rows.chunked(2).forEach { pair ->
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                pair.forEach { (label, value) ->
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                        Text(value, style = MaterialTheme.typography.bodyMedium)
+                        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                if (pair.size == 1) {
+                    Column(modifier = Modifier.weight(1f)) {}
+                }
+            }
+        }
+    }
+}

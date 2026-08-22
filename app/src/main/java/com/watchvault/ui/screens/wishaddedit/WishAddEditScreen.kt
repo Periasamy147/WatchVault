@@ -154,7 +154,8 @@ fun WishAddEditScreen(wishUuid: String?, onBack: () -> Unit, onSaved: (String) -
                     body = state.message,
                     onDismiss = viewModel::clearUrlImport,
                     primaryActionLabel = "OK",
-                    onPrimaryAction = viewModel::clearUrlImport
+                    onPrimaryAction = viewModel::clearUrlImport,
+                    technicalDetail = state.technicalDetail
                 )
             } else {
                 ErrorSheet(
@@ -167,7 +168,8 @@ fun WishAddEditScreen(wishUuid: String?, onBack: () -> Unit, onSaved: (String) -
                         viewModel.fetchFromUrl(urlToFetch)
                     },
                     secondaryActionLabel = "Enter Manually",
-                    onSecondaryAction = { manualEntryExpanded = true; viewModel.clearUrlImport() }
+                    onSecondaryAction = { manualEntryExpanded = true; viewModel.clearUrlImport() },
+                    technicalDetail = state.technicalDetail
                 )
             }
         }

@@ -101,17 +101,19 @@ fun WishlistScreen(onOpenAddEdit: (String?) -> Unit, onWatchCreated: (String) ->
 }
 
 // Trivial in-memory derivation from already-loaded currentPrice/targetPrice/priority — no new
-// fields on WishlistItem. Falls back to the existing priority tag when there isn't enough price
-// data to say anything about price movement.
+// fields on WishlistItem. "₹2,085 above target" reads more concretely than a generic "Near
+// Target" chip; falls back to the priority tag when there isn't enough price data to compare.
 private fun wishStatusLabel(item: WishlistItem): String? {
     val current = item.currentPrice
     val target = item.targetPrice
-    return when {
-        current != null && target != null && current <= target -> "At Target"
-        current != null && target != null && current <= target * 1.1 -> "Near Target"
-        item.priority == "Grail" -> "Grail"
-        else -> null
+    if (current != null && target != null) {
+        val diff = current - target
+        return when {
+            diff <= 0 -> "At target"
+            else -> "${formatMoney(diff, item.currency)} above target"
+        }
     }
+    return if (item.priority == "Grail") "Grail" else null
 }
 
 @Composable

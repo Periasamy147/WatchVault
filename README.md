@@ -1,4 +1,8 @@
-# WatchVault
+<p align="center">
+  <img src="logo.png" alt="WatchVault" width="160">
+</p>
+
+<h1 align="center">WatchVault</h1>
 
 An offline-first, personal wristwatch collection and wishlist app for Android. Kotlin +
 Jetpack Compose + Material 3, single-module app, Room database, no cloud sync, no account,

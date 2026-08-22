@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Deep slate blue, distinct from any known watch-brand or app-store icon palette. -->
-    <color name="ic_launcher_background">#1B2430</color>
-</resources>

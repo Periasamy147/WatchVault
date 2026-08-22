@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Watch
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,19 +38,21 @@ import androidx.navigation.compose.rememberNavController
 import com.watchvault.ui.theme.LocalVaultColors
 
 /** The 5 primary destinations shown in the bottom navigation bar: Home, Collection, Wishlist,
- *  Activity, Settings. Discover was folded into Wishlist's "Add from URL" flow. */
+ *  Discover, Activity. Settings is reached via the settings icon (Home's top bar), not a
+ *  permanent bottom-nav slot — it's a destination you visit occasionally, not one of the app's
+ *  five core sections. */
 enum class BottomNavItem(val route: String, val label: String, val icon: ImageVector) {
     HOME(Routes.HOME, "Home", Icons.Filled.Home),
     COLLECTION(Routes.COLLECTION, "Collection", Icons.Filled.Watch),
     WISHLIST(Routes.WISHLIST, "Wishlist", Icons.Filled.Favorite),
-    ACTIVITY(Routes.ACTIVITY, "Activity", Icons.Filled.History),
-    SETTINGS(Routes.SETTINGS, "Settings", Icons.Filled.Settings)
+    DISCOVER(Routes.DISCOVER, "Discover", Icons.Filled.Explore),
+    ACTIVITY(Routes.ACTIVITY, "Activity", Icons.Filled.History)
 }
 
 private val bottomNavRoutes = BottomNavItem.values().map { it.route }.toSet()
 
 /** Top-level app shell: hosts the nav graph and shows the 5-tab bottom navigation bar on the 5
- *  primary destinations (Home/Collection/Wishlist/Activity/Settings). Detail, add/edit
+ *  primary destinations (Home/Collection/Wishlist/Discover/Activity). Settings, detail, add/edit
  *  and import/export screens render full-screen without the bar. */
 @Composable
 fun WatchVaultApp() {

@@ -48,9 +48,11 @@ import com.watchvault.data.entity.Watch
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
 import com.watchvault.ui.common.WatchPhotoOrPlaceholder
+import com.watchvault.ui.common.WatchSpecGrid
 import com.watchvault.ui.common.formatDate
 import com.watchvault.ui.common.formatMoney
 import com.watchvault.ui.theme.LocalVaultColors
+import com.watchvault.ui.theme.Spacing
 import com.watchvault.ui.theme.WatchVaultExtraType
 
 /**
@@ -155,10 +157,13 @@ fun WatchDetailScreen(watchUuid: String, onBack: () -> Unit, onEdit: (String) ->
             val records = details?.maintenanceRecords ?: emptyList()
             DividedSection(title = "SERVICE") { ServiceContent(records, watch.purchaseCurrency) }
 
+            val specRows = specificationRows(watch)
+            if (specRows.isNotEmpty()) {
+                DividedSection(title = "SPECIFICATIONS") { WatchSpecGrid(specRows) }
+            }
+
             if (!watch.notes.isNullOrBlank()) {
-                DividedSection(title = "NOTES") {
-                    Text(watch.notes, style = MaterialTheme.typography.bodyMedium)
-                }
+                DividedSection(title = "NOTES") { CollapsibleNotes(watch.notes) }
             }
 
             val provenanceRows = provenanceRows(watch)
@@ -311,6 +316,48 @@ private fun ServiceContent(records: List<MaintenanceRecord>, fallbackCurrency: S
                     Text(details.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
+        }
+    }
+}
+
+private fun formatMm(value: Double): String =
+    if (value == value.toInt().toDouble()) value.toInt().toString() else value.toString()
+
+/** Full specification grid — every known technical fact, not just the four-fact summary line
+ *  above the value block. Only populated fields are included. */
+private fun specificationRows(watch: Watch): List<Pair<String, String>> {
+    val rows = mutableListOf<Pair<String, String>>()
+    (watch.movementNormalized ?: watch.movementRaw)?.let { rows += "Movement" to it }
+    watch.caseMaterial?.let { rows += "Case" to it }
+    watch.caseDiameterMm?.let { rows += "Case diameter" to "${formatMm(it)} mm" }
+    watch.caseThicknessMm?.let { rows += "Case thickness" to "${formatMm(it)} mm" }
+    watch.crystal?.let { rows += "Crystal" to it }
+    watch.dialColour?.let { rows += "Dial" to it }
+    listOfNotNull(watch.strap, watch.strapMaterial).joinToString(", ").ifBlank { null }?.let { rows += "Strap" to it }
+    watch.waterResistance?.let { rows += "Water resistance" to it }
+    watch.lugWidthMm?.let { rows += "Lug width" to "${formatMm(it)} mm" }
+    watch.caliber?.let { rows += "Caliber" to it }
+    watch.powerReserve?.let { rows += "Power reserve" to it }
+    watch.complications?.let { rows += "Complications" to it }
+    watch.batteryType?.let { rows += "Battery" to it }
+    return rows
+}
+
+@Composable
+private fun CollapsibleNotes(notes: String) {
+    var expanded by remember { mutableStateOf(false) }
+    val vaultColors = LocalVaultColors.current
+    val isLong = notes.length > 220
+    val shown = if (expanded || !isLong) notes else notes.take(220).trimEnd() + "…"
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        Text(shown, style = MaterialTheme.typography.bodyMedium)
+        if (isLong) {
+            Text(
+                if (expanded) "Show less" else "Show more",
+                style = MaterialTheme.typography.labelSmall,
+                color = vaultColors.gold,
+                modifier = Modifier.clickable { expanded = !expanded }
+            )
         }
     }
 }

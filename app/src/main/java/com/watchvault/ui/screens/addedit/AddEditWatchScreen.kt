@@ -122,6 +122,21 @@ fun AddEditWatchScreen(watchUuid: String?, onBack: () -> Unit, onSaved: (String)
                 OutlinedTextField(value = referenceNumber, onValueChange = { referenceNumber = it }, label = { Text("Reference number") }, modifier = Modifier.fillMaxWidth())
             }
 
+            SaveWatchButton(
+                enabled = brand.isNotBlank() && model.isNotBlank(),
+                onClick = {
+                    saveWatch(loadedExisting, brand, model, referenceNumber, movementRaw, conditionRaw, purchasePrice, purchaseCurrency, estimatedValue, box, papers, notes, viewModel) { savedUuid ->
+                        pendingSavedUuid = savedUuid
+                    }
+                }
+            )
+
+            Text(
+                "Everything below is optional and can be filled in anytime.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
             FormSection(title = "Value", initiallyExpanded = false) {
                 OutlinedTextField(
                     value = estimatedValue, onValueChange = { estimatedValue = it },
@@ -157,33 +172,58 @@ fun AddEditWatchScreen(watchUuid: String?, onBack: () -> Unit, onSaved: (String)
                 OutlinedTextField(value = notes, onValueChange = { notes = it }, label = { Text("Notes") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
             }
 
-            Button(
+            SaveWatchButton(
                 enabled = brand.isNotBlank() && model.isNotBlank(),
                 onClick = {
-                    val now = System.currentTimeMillis()
-                    val watch = (loadedExisting ?: Watch(
-                        uuid = "", brand = brand, model = model, createdAt = now, updatedAt = now
-                    )).copy(
-                        brand = brand,
-                        model = model,
-                        referenceNumber = referenceNumber.ifBlank { null },
-                        movementRaw = movementRaw.ifBlank { null },
-                        conditionRaw = conditionRaw.ifBlank { null },
-                        purchasePrice = purchasePrice.toDoubleOrNull(),
-                        purchaseCurrency = purchaseCurrency.ifBlank { null },
-                        estimatedValue = estimatedValue.toDoubleOrNull(),
-                        box = box,
-                        papers = papers,
-                        notes = notes.ifBlank { null },
-                        updatedAt = now
-                    )
-                    viewModel.save(watch) { savedUuid -> pendingSavedUuid = savedUuid }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Save")
-            }
+                    saveWatch(loadedExisting, brand, model, referenceNumber, movementRaw, conditionRaw, purchasePrice, purchaseCurrency, estimatedValue, box, papers, notes, viewModel) { savedUuid ->
+                        pendingSavedUuid = savedUuid
+                    }
+                }
+            )
         }
+    }
+}
+
+private fun saveWatch(
+    loadedExisting: Watch?,
+    brand: String,
+    model: String,
+    referenceNumber: String,
+    movementRaw: String,
+    conditionRaw: String,
+    purchasePrice: String,
+    purchaseCurrency: String,
+    estimatedValue: String,
+    box: Boolean?,
+    papers: Boolean?,
+    notes: String,
+    viewModel: AddEditWatchViewModel,
+    onSaved: (String) -> Unit
+) {
+    val now = System.currentTimeMillis()
+    val watch = (loadedExisting ?: Watch(
+        uuid = "", brand = brand, model = model, createdAt = now, updatedAt = now
+    )).copy(
+        brand = brand,
+        model = model,
+        referenceNumber = referenceNumber.ifBlank { null },
+        movementRaw = movementRaw.ifBlank { null },
+        conditionRaw = conditionRaw.ifBlank { null },
+        purchasePrice = purchasePrice.toDoubleOrNull(),
+        purchaseCurrency = purchaseCurrency.ifBlank { null },
+        estimatedValue = estimatedValue.toDoubleOrNull(),
+        box = box,
+        papers = papers,
+        notes = notes.ifBlank { null },
+        updatedAt = now
+    )
+    viewModel.save(watch, onSaved)
+}
+
+@Composable
+private fun SaveWatchButton(enabled: Boolean, onClick: () -> Unit) {
+    Button(enabled = enabled, onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+        Text("Save Watch")
     }
 }
 

@@ -28,6 +28,7 @@ import com.watchvault.data.settings.ThemeMode
  */
 data class VaultExtendedColors(
     val gold: Color,
+    val goldLight: Color,
     val success: Color,
     val warning: Color,
     val danger: Color,
@@ -37,6 +38,7 @@ data class VaultExtendedColors(
 
 private val VaultColorsLight = VaultExtendedColors(
     gold = vault_gold,
+    goldLight = vault_gold_light,
     success = vault_success,
     warning = vault_warning,
     danger = vault_danger,
@@ -46,6 +48,7 @@ private val VaultColorsLight = VaultExtendedColors(
 
 private val VaultColorsDark = VaultExtendedColors(
     gold = vault_gold,
+    goldLight = vault_gold_light,
     success = vault_success,
     warning = vault_warning,
     danger = vault_danger,
@@ -204,13 +207,13 @@ fun WatchVaultTheme(
         else -> schemeFromSeed(Color(seedColor.argb), darkTheme, isVault = seedColor == SeedColor.VAULT)
     }
 
-    // AMOLED mode swaps in a true black background/surface on top of whichever scheme was
-    // otherwise selected, so it composes with dynamic color and every seed swatch, not just Vault.
+    // AMOLED mode swaps in a true black base *background* on top of whichever scheme was
+    // otherwise selected, so it composes with dynamic color and every seed swatch, not just
+    // Vault. Surface/surfaceVariant deliberately keep their normal tonal-step values (not pure
+    // black too) so cards, sheets and the nav bar still read as distinct layers above the base —
+    // an all-one-black-value AMOLED mode is flat and was the exact complaint being fixed here.
     val colorScheme = if (amoled && darkTheme) {
-        baseColorScheme.copy(
-            background = vault_amoled_background,
-            surface = vault_amoled_background
-        )
+        baseColorScheme.copy(background = vault_amoled_background)
     } else {
         baseColorScheme
     }

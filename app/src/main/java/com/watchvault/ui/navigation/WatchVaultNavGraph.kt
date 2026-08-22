@@ -27,6 +27,8 @@ fun WatchVaultNavGraph(navController: NavHostController) {
                 onOpenDiscover = { navController.navigate(Routes.DISCOVER) },
                 onOpenActivity = { navController.navigate(Routes.ACTIVITY) },
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                onOpenImportExport = { navController.navigate(Routes.IMPORT_EXPORT) },
+                onAddWatch = { navController.navigate(Routes.addEditWatch()) },
                 onOpenWatch = { uuid -> navController.navigate(Routes.watchDetail(uuid)) }
             )
         }

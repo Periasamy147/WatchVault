@@ -5,12 +5,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-fun formatMoney(amount: Double?, currency: String?, assumed: Boolean = false): String {
+private val CURRENCY_SYMBOLS = mapOf(
+    "INR" to "₹", "USD" to "$", "EUR" to "€", "GBP" to "£", "JPY" to "¥"
+)
+
+fun formatMoney(amount: Double?, currency: String?): String {
     if (amount == null) return "—"
-    val formatted = NumberFormat.getNumberInstance(Locale.getDefault()).apply { maximumFractionDigits = 2 }.format(amount)
-    val currencyLabel = currency ?: "?"
-    val suffix = if (assumed) " (assumed)" else ""
-    return "$currencyLabel $formatted$suffix"
+    val formatted = NumberFormat.getNumberInstance(Locale.getDefault()).apply { maximumFractionDigits = 0 }.format(amount)
+    val symbol = currency?.let { CURRENCY_SYMBOLS[it] } ?: currency?.plus(" ") ?: ""
+    return "$symbol$formatted"
 }
 
 fun formatDate(epochMillis: Long?): String {

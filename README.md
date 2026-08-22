@@ -18,6 +18,34 @@ Android Studio (Hedgehog or newer) once you point it at a real SDK, but treat th
 2. First build will need network access to resolve dependencies from Google's and Maven
    Central's repositories.
 
+## Download
+
+No build tools needed — grab the latest signed APK from the
+[Releases page](https://github.com/Periasamy147/WatchVault/releases) and install it
+directly (enable "install from unknown sources" for your browser/file manager). No
+account, no cloud, no network access required to run the app itself.
+
+## Releases (CI)
+
+Two workflows, split by branch, so only intentional releases produce an APK:
+
+- **`production` branch** (`.github/workflows/release.yml`) — on every push, CI builds a
+  signed release APK with Gradle, runs the unit tests, and publishes a GitHub Release
+  tagged from `versionName` in `app/build.gradle.kts` (e.g. `v1.0.0`) with the APK attached
+  as a downloadable asset. Nothing else triggers a release.
+- **Every other branch / PR** (`.github/workflows/ci.yml`) — build + unit tests only
+  (`assembleDebug`, `testDebugUnitTest`). No APK is produced, nothing is published.
+
+To cut a new release: bump `versionCode`/`versionName` in `app/build.gradle.kts`, merge
+into `production`, and CI does the rest.
+
+The release APK is signed with a keystore generated fresh inside each CI run (self-signed,
+good enough to install — it doesn't assert developer identity the way a Play Store
+listing would). Bring your own keystore later by setting the `RELEASE_KEYSTORE_PATH`,
+`RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`, and `RELEASE_KEY_PASSWORD` repo secrets
+and committing that step instead — `app/build.gradle.kts` already reads those env vars and
+falls back to debug signing locally when no keystore is present.
+
 ## Build
 
 - Android Studio Hedgehog (2023.1.1) or newer

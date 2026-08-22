@@ -24,10 +24,29 @@ android {
         }
     }
 
+    val releaseKeystorePath = System.getenv("RELEASE_KEYSTORE_PATH") ?: "$rootDir/release.keystore"
+    val releaseKeystoreFile = file(releaseKeystorePath)
+
+    signingConfigs {
+        if (releaseKeystoreFile.exists()) {
+            create("release") {
+                storeFile = releaseKeystoreFile
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD") ?: "watchvault"
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "watchvault"
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: "watchvault"
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = if (releaseKeystoreFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
         debug {
             isMinifyEnabled = false

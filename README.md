@@ -68,12 +68,16 @@ Two workflows, split by branch, so only intentional releases produce an APK:
 To cut a new release: bump `versionCode`/`versionName` in `app/build.gradle.kts`, merge
 into `production`, and CI does the rest.
 
-The release APK is signed with a keystore generated fresh inside each CI run (self-signed,
-good enough to install — it doesn't assert developer identity the way a Play Store
-listing would). Bring your own keystore later by setting the `RELEASE_KEYSTORE_PATH`,
-`RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`, and `RELEASE_KEY_PASSWORD` repo secrets
-and committing that step instead — `app/build.gradle.kts` already reads those env vars and
-falls back to debug signing locally when no keystore is present.
+The release APK is signed with a single self-signed keystore stored base64-encoded in the
+`RELEASE_KEYSTORE_B64` repo secret (password/alias in `RELEASE_KEYSTORE_PASSWORD` /
+`RELEASE_KEY_ALIAS` / `RELEASE_KEY_PASSWORD`), decoded fresh each run and deleted from the
+runner afterward. Every release shares this same certificate, so upgrades install cleanly —
+Android refuses to install an update signed with a different certificate than the currently
+installed app (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`, shown as a bare "App not installed").
+`v1.0.0`–`v1.3.0` predate this fix and were each signed with a different one-off certificate;
+anyone with one of those installed needs to uninstall it once before installing `v1.4.0+`. To
+rotate the keystore later, generate a new one and replace all four secrets — everyone will
+need one more uninstall/reinstall when you do.
 
 ## Build
 

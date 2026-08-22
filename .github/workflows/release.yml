@@ -1,7 +1,6 @@
 name: Release APK
 
-# Only the `production` branch ever produces a release. Every other branch is
-# covered by ci.yml (build + test only, no APK, no release).
+# Only production releases; other branches use ci.yml.
 on:
   push:
     branches: [production]
@@ -31,16 +30,15 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      - name: Generate release signing key
-        # Self-signed, generated fresh each run: good enough to let anyone
-        # install the APK directly, not meant to prove developer identity.
+      - name: Restore the persisted release signing key
+        env:
+          RELEASE_KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_B64 }}
         run: |
-          keytool -genkeypair -v \
-            -keystore "$GITHUB_WORKSPACE/release.keystore" \
-            -alias watchvault \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass watchvault -keypass watchvault \
-            -dname "CN=WatchVault, OU=WatchVault, O=WatchVault, L=NA, S=NA, C=IN"
+          if [ -z "$RELEASE_KEYSTORE_B64" ]; then
+            echo "::error::RELEASE_KEYSTORE_B64 secret is not set — cannot sign a release build with a stable certificate."
+            exit 1
+          fi
+          echo "$RELEASE_KEYSTORE_B64" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -59,16 +57,16 @@ jobs:
       - name: Build release APK
         env:
           RELEASE_KEYSTORE_PATH: ${{ github.workspace }}/release.keystore
-          RELEASE_KEYSTORE_PASSWORD: watchvault
-          RELEASE_KEY_ALIAS: watchvault
-          RELEASE_KEY_PASSWORD: watchvault
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: ./gradlew assembleRelease --no-daemon
 
+      - name: Remove the keystore from the runner
+        if: always()
+        run: rm -f "$GITHUB_WORKSPACE/release.keystore"
+
       - name: Stage APK
-        # Two copies of the same file: a versioned one for the release's own asset list, and a
-        # constantly-named one so the README's "latest download" link/badge never has to change.
-        # Every release carries a WatchVault-latest.apk, so /releases/latest/download/... always
-        # resolves to whichever release GitHub currently marks "Latest".
         run: |
           mkdir -p out
           cp app/build/outputs/apk/release/app-release.apk \

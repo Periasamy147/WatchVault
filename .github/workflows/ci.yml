@@ -1,7 +1,6 @@
 name: CI
 
-# Every branch except production: build + test only. No APK is produced and
-# no release is created here — that only happens on release.yml via production.
+# Build + test only; production releases use release.yml.
 on:
   push:
     branches-ignore: [production]

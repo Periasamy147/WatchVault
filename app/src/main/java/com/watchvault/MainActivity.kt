@@ -41,8 +41,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** Opts into the display's highest refresh rate (90/120Hz panels) instead of the OS default
-     *  of 60Hz for apps that don't ask. Safe no-op on 60Hz-only hardware. */
     private fun requestHighestRefreshRate() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
         val display = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) display else windowManager.defaultDisplay

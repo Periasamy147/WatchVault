@@ -3,6 +3,7 @@ package com.watchvault.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.watchvault.data.entity.Watch
+import com.watchvault.data.relation.WatchWithDetails
 import com.watchvault.data.repository.WatchRepository
 import com.watchvault.data.repository.WishlistRepository
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,7 +23,13 @@ data class HomeStats(
     val movementBreakdown: Map<String, Int> = emptyMap(),
     val mostValuable: Watch? = null,
     val oldestPurchase: Watch? = null,
-    val newestPurchase: Watch? = null
+    val newestPurchase: Watch? = null,
+    // Most-recently-added watch (by createdAt) with its photos, for the Home "Featured
+    // Timepiece" hero. Plain in-memory derivation of data already loaded above — no new query.
+    val featured: WatchWithDetails? = null,
+    // A few of the most-recently-added watches (including [featured]) for the "Your Collection"
+    // preview strip.
+    val recentWatches: List<WatchWithDetails> = emptyList()
 )
 
 /**
@@ -52,6 +59,8 @@ class HomeViewModel(
             .sortedByDescending { it.second }
             .toMap()
 
+        val recentWatches = watchDetails.sortedByDescending { it.watch.createdAt }.take(6)
+
         HomeStats(
             totalWatches = watches.size,
             wishlistCount = wishlist.size,
@@ -64,7 +73,9 @@ class HomeViewModel(
             movementBreakdown = movementBreakdown,
             mostValuable = watches.maxByOrNull { it.estimatedValue ?: it.purchasePrice ?: 0.0 },
             oldestPurchase = watches.filter { it.purchaseDate != null }.minByOrNull { it.purchaseDate!! },
-            newestPurchase = watches.filter { it.purchaseDate != null }.maxByOrNull { it.purchaseDate!! }
+            newestPurchase = watches.filter { it.purchaseDate != null }.maxByOrNull { it.purchaseDate!! },
+            featured = recentWatches.firstOrNull(),
+            recentWatches = recentWatches
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeStats())
 }

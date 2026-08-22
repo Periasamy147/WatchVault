@@ -81,8 +81,9 @@ val vault_light_onSurfaceVariant = Color(0xFF5B564D)
 val vault_light_muted = Color(0xFF8B8579)
 
 // Functional accents — shared between light/dark; only their container/on-colors adapt.
-val vault_primary = Color(0xFF3F86F5)
-val vault_gold = Color(0xFFC6A15B)
+val vault_primary = Color(0xFF3F86F5) // "Blue" functional accent
+val vault_gold = Color(0xFFC6A15B) // "Warm Gold" — reserved for value figures, selection, premium badges
+val vault_gold_light = Color(0xFFD8BD7A) // "Light Gold" — highlights/gradient partner for Warm Gold
 val vault_success = Color(0xFF62B76A)
 val vault_warning = Color(0xFFD8A84E)
 val vault_danger = Color(0xFFD66B6B)

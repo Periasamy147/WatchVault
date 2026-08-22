@@ -91,11 +91,16 @@ fun SettingsScreen(onOpenImportExport: () -> Unit) {
             }
 
             HorizontalDivider()
-            Text("Import / Export", style = MaterialTheme.typography.titleMedium)
+            Text("Data", style = MaterialTheme.typography.titleMedium)
             Text(
-                "Backups, MyInnos migration, and restore live on their own screen.",
-                style = MaterialTheme.typography.bodySmall,
+                "Import, Export, Backup",
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.clickable(onClick = onOpenImportExport)
+            )
+            Text(
+                "MyInnos migration, full backup export, and restore live on their own screen.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             HorizontalDivider()

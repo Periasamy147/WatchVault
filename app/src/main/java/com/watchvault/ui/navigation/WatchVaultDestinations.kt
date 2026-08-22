@@ -4,7 +4,6 @@ object Routes {
     const val HOME = "home"
     const val COLLECTION = "collection"
     const val WISHLIST = "wishlist"
-    const val DISCOVER = "discover"
     const val ACTIVITY = "activity"
     const val SETTINGS = "settings"
     const val IMPORT_EXPORT = "import_export"

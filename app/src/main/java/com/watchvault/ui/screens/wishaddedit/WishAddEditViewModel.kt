@@ -16,7 +16,10 @@ sealed interface UrlImportState {
     data object Idle : UrlImportState
     data object Loading : UrlImportState
     data class Preview(val data: ExtractedProductData) : UrlImportState
-    data class Error(val message: String) : UrlImportState
+    // [message] is always a plain, user-facing sentence — never a raw exception message, stack
+    // trace, or HTTP status string. [technicalDetail] keeps the underlying cause for logging /
+    // future debugging only; it must never be rendered in the UI.
+    data class Error(val message: String, val technicalDetail: String? = null) : UrlImportState
 }
 
 class WishAddEditViewModel(
@@ -36,7 +39,13 @@ class WishAddEditViewModel(
             _urlImportState.value = try {
                 UrlImportState.Preview(urlImportPipeline.run(url))
             } catch (e: Exception) {
-                UrlImportState.Error(e.message ?: "Could not fetch that URL")
+                // The underlying cause (network error, non-200 status, parse failure, etc.) is
+                // kept only for logging — the user always sees a plain, actionable sentence.
+                android.util.Log.e("WishAddEditViewModel", "URL import failed for $url", e)
+                UrlImportState.Error(
+                    message = "Couldn't retrieve product details — try again or enter details manually.",
+                    technicalDetail = e.message
+                )
             }
         }
     }

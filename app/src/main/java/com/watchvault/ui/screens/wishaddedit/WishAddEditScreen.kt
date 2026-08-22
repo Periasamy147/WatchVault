@@ -16,7 +16,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -56,6 +55,9 @@ fun WishAddEditScreen(wishUuid: String?, onBack: () -> Unit, onSaved: (String) -
     var notes by remember { mutableStateOf("") }
     var existing by remember { mutableStateOf<WishlistItem?>(null) }
     var urlToFetch by remember { mutableStateOf("") }
+    // Manual entry starts collapsed for a brand-new wish (URL paste + Fetch is the primary path)
+    // but is already open when editing an existing item, since its fields need to be visible.
+    var manualEntryExpanded by remember { mutableStateOf(wishUuid != null) }
 
     LaunchedEffect(wishUuid) {
         viewModel.load()?.let { item ->
@@ -85,40 +87,47 @@ fun WishAddEditScreen(wishUuid: String?, onBack: () -> Unit, onSaved: (String) -
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedTextField(value = urlToFetch, onValueChange = { urlToFetch = it }, label = { Text("Add from URL") }, modifier = Modifier.fillMaxWidth())
-            OutlinedButton(onClick = { if (urlToFetch.isNotBlank()) viewModel.fetchFromUrl(urlToFetch) }, modifier = Modifier.fillMaxWidth()) {
-                Text("Fetch preview")
+            Text("Paste a product page link and we'll try to fill in the details for you.", style = MaterialTheme.typography.bodySmall)
+            OutlinedTextField(value = urlToFetch, onValueChange = { urlToFetch = it }, label = { Text("Product URL") }, modifier = Modifier.fillMaxWidth())
+            Button(onClick = { if (urlToFetch.isNotBlank()) viewModel.fetchFromUrl(urlToFetch) }, modifier = Modifier.fillMaxWidth()) {
+                Text("Fetch")
             }
 
-            OutlinedTextField(value = brand, onValueChange = { brand = it }, label = { Text("Brand *") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = model, onValueChange = { model = it }, label = { Text("Model *") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = referenceNumber, onValueChange = { referenceNumber = it }, label = { Text("Reference number") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = productUrl, onValueChange = { productUrl = it }, label = { Text("Product URL") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = targetPrice, onValueChange = { targetPrice = it }, label = { Text("Target price") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = currentPrice, onValueChange = { currentPrice = it }, label = { Text("Current price") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = currency, onValueChange = { currency = it }, label = { Text("Currency") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = priority, onValueChange = { priority = it }, label = { Text("Priority (Grail/High/Medium/Low)") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = notes, onValueChange = { notes = it }, label = { Text("Notes") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
+            if (!manualEntryExpanded) {
+                TextButton(onClick = { manualEntryExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text("Enter manually")
+                }
+            } else {
+                OutlinedTextField(value = brand, onValueChange = { brand = it }, label = { Text("Brand *") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = model, onValueChange = { model = it }, label = { Text("Model *") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = referenceNumber, onValueChange = { referenceNumber = it }, label = { Text("Reference number") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = productUrl, onValueChange = { productUrl = it }, label = { Text("Product URL") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = targetPrice, onValueChange = { targetPrice = it }, label = { Text("Target price") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = currentPrice, onValueChange = { currentPrice = it }, label = { Text("Current price") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = currency, onValueChange = { currency = it }, label = { Text("Currency") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = priority, onValueChange = { priority = it }, label = { Text("Priority (Grail/High/Medium/Low)") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = notes, onValueChange = { notes = it }, label = { Text("Notes") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
 
-            Button(
-                enabled = brand.isNotBlank() && model.isNotBlank(),
-                onClick = {
-                    val now = System.currentTimeMillis()
-                    val item = (existing ?: WishlistItem(uuid = "", brand = brand, model = model, dateAdded = now, updatedAt = now)).copy(
-                        brand = brand, model = model,
-                        referenceNumber = referenceNumber.ifBlank { null },
-                        productUrl = productUrl.ifBlank { null },
-                        targetPrice = targetPrice.toDoubleOrNull(),
-                        currentPrice = currentPrice.toDoubleOrNull(),
-                        currency = currency.ifBlank { null },
-                        priority = priority.ifBlank { "Medium" },
-                        notes = notes.ifBlank { null },
-                        updatedAt = now
-                    )
-                    viewModel.save(item, onSaved)
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Save") }
+                Button(
+                    enabled = brand.isNotBlank() && model.isNotBlank(),
+                    onClick = {
+                        val now = System.currentTimeMillis()
+                        val item = (existing ?: WishlistItem(uuid = "", brand = brand, model = model, dateAdded = now, updatedAt = now)).copy(
+                            brand = brand, model = model,
+                            referenceNumber = referenceNumber.ifBlank { null },
+                            productUrl = productUrl.ifBlank { null },
+                            targetPrice = targetPrice.toDoubleOrNull(),
+                            currentPrice = currentPrice.toDoubleOrNull(),
+                            currency = currency.ifBlank { null },
+                            priority = priority.ifBlank { "Medium" },
+                            notes = notes.ifBlank { null },
+                            updatedAt = now
+                        )
+                        viewModel.save(item, onSaved)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Save") }
+            }
         }
     }
 
@@ -131,8 +140,11 @@ fun WishAddEditScreen(wishUuid: String?, onBack: () -> Unit, onSaved: (String) -
         )
         is UrlImportState.Error -> AlertDialog(
             onDismissRequest = viewModel::clearUrlImport,
-            confirmButton = { TextButton(onClick = viewModel::clearUrlImport) { Text("OK") } },
-            title = { Text("Could not fetch") },
+            confirmButton = {
+                TextButton(onClick = { manualEntryExpanded = true; viewModel.clearUrlImport() }) { Text("Enter manually") }
+            },
+            dismissButton = { TextButton(onClick = viewModel::clearUrlImport) { Text("Try again") } },
+            title = { Text("Couldn't fetch that link") },
             text = { Text(state.message) }
         )
         is UrlImportState.Preview -> UrlPreviewDialog(
@@ -145,6 +157,7 @@ fun WishAddEditScreen(wishUuid: String?, onBack: () -> Unit, onSaved: (String) -
                 data.price.value?.let { currentPrice = it.toString() }
                 data.currency.value?.let { currency = it }
                 productUrl = data.sourceUrl
+                manualEntryExpanded = true
                 viewModel.clearUrlImport()
             }
         )

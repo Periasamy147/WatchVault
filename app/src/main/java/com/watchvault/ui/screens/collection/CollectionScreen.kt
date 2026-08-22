@@ -197,6 +197,20 @@ private fun FilterBar(filters: CollectionFilters, viewModel: CollectionViewModel
 }
 
 @Composable
+private fun GainLossLine(watch: com.watchvault.data.entity.Watch, successColor: androidx.compose.ui.graphics.Color, dangerColor: androidx.compose.ui.graphics.Color) {
+    val purchase = watch.purchasePrice
+    val current = watch.estimatedValue
+    if (purchase == null || current == null) return
+    val diff = current - purchase
+    val sign = if (diff >= 0) "+" else ""
+    Text(
+        "$sign${formatMoney(diff, watch.estimatedValueCurrency ?: watch.purchaseCurrency)}",
+        style = MaterialTheme.typography.labelSmall,
+        color = if (diff >= 0) successColor else dangerColor
+    )
+}
+
+@Composable
 private fun WatchGridCard(details: WatchWithDetails, onClick: () -> Unit) {
     val watch = details.watch
     val vaultColors = LocalVaultColors.current
@@ -205,8 +219,8 @@ private fun WatchGridCard(details: WatchWithDetails, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp))
-            .border(1.dp, vaultColors.border, RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .border(1.dp, vaultColors.border, RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
     ) {
         WatchPhotoOrPlaceholder(
@@ -215,12 +229,13 @@ private fun WatchGridCard(details: WatchWithDetails, onClick: () -> Unit) {
         )
         Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(watch.brand, style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(watch.model, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, maxLines = 2)
+            Text(watch.model, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1)
             Text(
                 formatMoney(watch.estimatedValue, watch.estimatedValueCurrency),
                 style = MaterialTheme.typography.labelMedium,
                 color = vaultColors.gold
             )
+            GainLossLine(watch, vaultColors.success, vaultColors.danger)
         }
     }
 }
@@ -234,8 +249,8 @@ private fun WatchListRow(details: WatchWithDetails, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp))
-            .border(1.dp, vaultColors.border, RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .border(1.dp, vaultColors.border, RoundedCornerShape(12.dp))
             .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -244,13 +259,14 @@ private fun WatchListRow(details: WatchWithDetails, onClick: () -> Unit) {
             modifier = Modifier.fillMaxWidth(0.28f).aspectRatio(1f)
         )
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text("${watch.brand} ${watch.model}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
-            Text(watch.referenceNumber ?: "No reference number", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(watch.brand, style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(watch.model, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1)
             Text(
                 formatMoney(watch.estimatedValue, watch.estimatedValueCurrency),
                 style = MaterialTheme.typography.labelMedium,
                 color = vaultColors.gold
             )
+            GainLossLine(watch, vaultColors.success, vaultColors.danger)
         }
     }
 }

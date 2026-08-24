@@ -1,5 +1,6 @@
 package com.watchvault.ui.screens.watchdetail
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,14 +11,18 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
@@ -42,6 +47,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.watchvault.data.entity.WatchPhoto
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.watchvault.data.entity.MaintenanceRecord
 import com.watchvault.data.entity.Watch
@@ -63,6 +71,7 @@ import com.watchvault.ui.theme.WatchVaultExtraType
  * no low-level provenance fields (nickname/source/seller/location/invoice/first-owner) in the
  * primary flow. Those live behind a collapsed "Provenance" disclosure at the bottom.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WatchDetailScreen(watchUuid: String, onBack: () -> Unit, onEdit: (String) -> Unit) {
     val container = LocalAppContainer.current
@@ -89,7 +98,7 @@ fun WatchDetailScreen(watchUuid: String, onBack: () -> Unit, onEdit: (String) ->
         return
     }
     val photos = details?.photos ?: emptyList()
-    val primaryPhoto = photos.firstOrNull { it.isPrimary } ?: photos.firstOrNull()
+    var fullscreenIndex by remember { mutableStateOf<Int?>(null) }
 
     if (confirmingDelete) {
         AlertDialog(
@@ -107,18 +116,56 @@ fun WatchDetailScreen(watchUuid: String, onBack: () -> Unit, onEdit: (String) ->
         )
     }
 
+    val orderedPhotos = remember(photos) {
+        val primary = photos.firstOrNull { it.isPrimary }
+        if (primary == null) photos else listOf(primary) + photos.filterNot { it.uuid == primary.uuid }
+    }
+
+    if (fullscreenIndex != null) {
+        PhotoGalleryDialog(
+            photos = orderedPhotos,
+            startIndex = fullscreenIndex ?: 0,
+            onDismiss = { fullscreenIndex = null }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            WatchPhotoOrPlaceholder(
-                photo = primaryPhoto,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-            )
+            if (orderedPhotos.isEmpty()) {
+                WatchPhotoOrPlaceholder(photo = null, modifier = Modifier.fillMaxWidth().aspectRatio(1f))
+            } else {
+                val pagerState = rememberPagerState(pageCount = { orderedPhotos.size })
+                HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth().aspectRatio(1f)) { page ->
+                    WatchPhotoOrPlaceholder(
+                        photo = orderedPhotos[page],
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable { fullscreenIndex = page }
+                    )
+                }
+                if (orderedPhotos.size > 1) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        orderedPhotos.indices.forEach { index ->
+                            val active = index == pagerState.currentPage
+                            Box(
+                                modifier = Modifier
+                                    .size(if (active) 7.dp else 6.dp)
+                                    .clip(CircleShape)
+                                    .background(if (active) Color.White else Color.White.copy(alpha = 0.45f))
+                            )
+                        }
+                    }
+                }
+            }
             FloatingTopControls(
                 onBack = onBack,
                 menuExpanded = menuExpanded,
@@ -415,5 +462,47 @@ private fun LabeledRow(label: String, value: String) {
     ) {
         Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(value, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+/** Full-bleed, swipeable photo viewer opened by tapping the hero image. No pinch-zoom — just a
+ *  distraction-free way to page through every photo on file for this watch. */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun PhotoGalleryDialog(photos: List<WatchPhoto>, startIndex: Int, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+            val pagerState = rememberPagerState(initialPage = startIndex, pageCount = { photos.size })
+            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+                WatchPhotoOrPlaceholder(
+                    photo = photos[page],
+                    contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .padding(12.dp)
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.15f))
+            ) {
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Filled.Close, contentDescription = "Close", tint = Color.White)
+                }
+            }
+            if (photos.size > 1) {
+                Text(
+                    "${pagerState.currentPage + 1} / ${photos.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 24.dp)
+                )
+            }
+        }
     }
 }

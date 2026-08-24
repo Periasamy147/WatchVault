@@ -79,6 +79,9 @@ interface WatchPhotoDao {
     @Query("SELECT * FROM watch_photos WHERE wishlist_item_uuid = :itemUuid ORDER BY sort_order")
     suspend fun forWishlistItem(itemUuid: String): List<WatchPhoto>
 
+    @Update
+    suspend fun updateAll(photos: List<WatchPhoto>)
+
     @Delete
     suspend fun delete(photo: WatchPhoto)
 }

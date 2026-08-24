@@ -93,7 +93,6 @@ fun CollectionScreen(
     val watches by viewModel.watches.collectAsState()
     val filters by viewModel.filters.collectAsState()
     val allWatches by viewModel.allWatches.collectAsState()
-    val vaultColors = LocalVaultColors.current
 
     var searchExpanded by remember { mutableStateOf(false) }
     var filterSheetOpen by remember { mutableStateOf(false) }
@@ -198,7 +197,7 @@ private fun CollectionHeader(
                                 .align(Alignment.TopEnd)
                                 .size(8.dp)
                                 .clip(CircleShape)
-                                .background(vaultColors.gold)
+                                .background(MaterialTheme.colorScheme.primary)
                         )
                     }
                 }
@@ -213,7 +212,7 @@ private fun CollectionHeader(
 
         if (showPortfolio && !searchExpanded) {
             Column(modifier = Modifier.padding(top = Spacing.xs)) {
-                Text(formatMoney(currentValue, "INR"), style = WatchVaultExtraType.statisticLarge, color = vaultColors.gold)
+                Text(formatMoney(currentValue, "INR"), style = WatchVaultExtraType.statisticLarge)
                 if (purchaseValue > 0.0) {
                     val gainColor = if (gainLoss >= 0) vaultColors.success else vaultColors.danger
                     val sign = if (gainLoss >= 0) "+" else ""
@@ -234,7 +233,6 @@ private fun CollectionHeader(
 
 @Composable
 private fun SearchField(query: String, onQueryChange: (String) -> Unit, onClear: () -> Unit) {
-    val vaultColors = LocalVaultColors.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -252,7 +250,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, onClear:
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
-            cursorBrush = androidx.compose.ui.graphics.SolidColor(vaultColors.gold),
+            cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
             modifier = Modifier.weight(1f),
             decorationBox = { inner ->
                 if (query.isEmpty()) {

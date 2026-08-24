@@ -45,11 +45,16 @@ private fun colorsFor(variant: CapsuleVariant): CapsuleColors {
     return when (variant) {
         CapsuleVariant.NEUTRAL -> CapsuleColors(scheme.surfaceVariant, scheme.onSurfaceVariant, null)
         CapsuleVariant.SUBTLE -> CapsuleColors(scheme.onSurface.copy(alpha = 0.06f), scheme.onSurface.copy(alpha = 0.75f), null)
+        // ACCENT is reserved for genuinely special status (a "Grail" wishlist priority) — kept
+        // in the vault's warm gold rather than the interactive blue, since it marks a premium
+        // distinction, not something tappable.
         CapsuleVariant.ACCENT -> CapsuleColors(vault.gold.copy(alpha = 0.14f), vault.gold, null)
         CapsuleVariant.SUCCESS -> CapsuleColors(vault.success.copy(alpha = 0.14f), vault.success, null)
         CapsuleVariant.WARNING -> CapsuleColors(vault.warning.copy(alpha = 0.16f), vault.warning, null)
         CapsuleVariant.DESTRUCTIVE -> CapsuleColors(vault.danger.copy(alpha = 0.14f), vault.danger, null)
-        CapsuleVariant.SELECTED -> CapsuleColors(vault.gold, scheme.surface, null)
+        // SELECTED marks an active filter/sort/toggle choice — an interactive state, so it uses
+        // the theme's blue accent (colorScheme.primary), never gold.
+        CapsuleVariant.SELECTED -> CapsuleColors(scheme.primary, scheme.onPrimary, null)
         CapsuleVariant.OUTLINED -> CapsuleColors(Color.Transparent, scheme.onSurfaceVariant, vault.border)
     }
 }

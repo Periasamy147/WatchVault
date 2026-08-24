@@ -99,7 +99,7 @@ fun SectionHeader(
             Text(
                 trailingText,
                 style = MaterialTheme.typography.labelMedium,
-                color = LocalVaultColors.current.gold,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable(onClick = onTrailingClick)
             )
         }
@@ -173,10 +173,9 @@ fun WatchCard(
     secondaryText: String? = null,
     secondaryColor: Color? = null,
     statusLabel: String? = null,
+    statusVariant: CapsuleVariant = CapsuleVariant.SUCCESS,
     onClick: () -> Unit
 ) {
-    val vaultColors = LocalVaultColors.current
-    val goldColor = vaultColors.gold
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.97f else 1f, tween(Motion.quick), label = "cardPress")
@@ -194,14 +193,14 @@ fun WatchCard(
                     modifier = Modifier.fillMaxWidth().aspectRatio(0.84f).clip(RoundedCornerShape(Radius.card))
                 )
                 if (statusLabel != null) {
-                    Capsule(statusLabel, variant = CapsuleVariant.ACCENT, modifier = Modifier.padding(Spacing.xs))
+                    Capsule(statusLabel, variant = statusVariant, modifier = Modifier.padding(Spacing.xs))
                 }
             }
             Column(modifier = Modifier.padding(top = Spacing.xs), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 Text(brand.uppercase(), style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(model, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (primaryValueText != null) {
-                    Text(primaryValueText, style = MaterialTheme.typography.labelMedium, color = primaryValueColor ?: goldColor)
+                    Text(primaryValueText, style = MaterialTheme.typography.labelMedium, color = primaryValueColor ?: MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
                 }
                 if (secondaryText != null) {
                     Text(secondaryText, style = MaterialTheme.typography.labelSmall, color = secondaryColor ?: MaterialTheme.colorScheme.onSurfaceVariant)
@@ -227,11 +226,11 @@ fun WatchCard(
                         Text(model, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     if (statusLabel != null) {
-                        Capsule(statusLabel, variant = CapsuleVariant.ACCENT)
+                        Capsule(statusLabel, variant = statusVariant)
                     }
                 }
                 if (primaryValueText != null) {
-                    Text(primaryValueText, style = MaterialTheme.typography.labelMedium, color = primaryValueColor ?: goldColor)
+                    Text(primaryValueText, style = MaterialTheme.typography.labelMedium, color = primaryValueColor ?: MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
                 }
                 if (secondaryText != null) {
                     Text(secondaryText, style = MaterialTheme.typography.labelSmall, color = secondaryColor ?: MaterialTheme.colorScheme.onSurfaceVariant)

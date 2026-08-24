@@ -122,7 +122,7 @@ private fun VaultBottomBar(currentRoute: String?, onSelect: (BottomNavItem) -> U
                         VaultNavTab(
                             item = item,
                             selected = selected,
-                            goldColor = vaultColors.gold,
+                            accentColor = MaterialTheme.colorScheme.primary,
                             onClick = { onSelect(item) }
                         )
                     }
@@ -136,10 +136,10 @@ private fun VaultBottomBar(currentRoute: String?, onSelect: (BottomNavItem) -> U
 private fun VaultNavTab(
     item: BottomNavItem,
     selected: Boolean,
-    goldColor: androidx.compose.ui.graphics.Color,
+    accentColor: androidx.compose.ui.graphics.Color,
     onClick: () -> Unit
 ) {
-    val contentColor = if (selected) goldColor else MaterialTheme.colorScheme.onSurfaceVariant
+    val contentColor = if (selected) accentColor else MaterialTheme.colorScheme.onSurfaceVariant
     Column(
         modifier = Modifier
             .clip(MaterialTheme.shapes.small)
@@ -163,7 +163,7 @@ private fun VaultNavTab(
                 .padding(top = 3.dp)
                 .size(4.dp)
                 .clip(CircleShape)
-                .background(if (selected) goldColor else androidx.compose.ui.graphics.Color.Transparent)
+                .background(if (selected) accentColor else androidx.compose.ui.graphics.Color.Transparent)
         )
     }
 }

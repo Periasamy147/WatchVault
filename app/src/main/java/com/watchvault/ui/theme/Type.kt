@@ -60,4 +60,35 @@ object WatchVaultExtraType {
         fontSize = 30.sp,
         lineHeight = 36.sp
     )
+
+    /** Text inside a [com.watchvault.ui.common.Capsule] — small and slightly spaced so a row of
+     *  capsules reads as tags, not as a second body-text size. */
+    val capsule = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.2.sp
+    )
+
+    /** Editorial hero headline — the largest text in the app, reserved for Home's greeting and
+     *  section intros ("Your Collection"). Distinct from [androidx.compose.material3.Typography.displayLarge]:
+     *  tighter tracking, built for a short phrase rather than a display numeral. */
+    val heroTitle = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 34.sp,
+        lineHeight = 40.sp,
+        letterSpacing = (-0.3).sp
+    )
+
+    /** A large statistic figure ("18", "₹8.4L") paired with [metadata] as its caption — used for
+     *  collection snapshots and insight numbers instead of putting the number in a card. */
+    val statisticLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 26.sp,
+        lineHeight = 30.sp,
+        letterSpacing = (-0.2).sp
+    )
 }

@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -30,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -38,12 +38,17 @@ import com.watchvault.data.migration.WishToOwnedConverter
 import com.watchvault.data.relation.WishlistItemWithDetails
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
+import com.watchvault.ui.common.Capsule
+import com.watchvault.ui.common.CapsuleVariant
 import com.watchvault.ui.common.EmptyState
+import com.watchvault.ui.common.IconActionButton
+import com.watchvault.ui.common.TertiaryButton
 import com.watchvault.ui.common.WatchCard
 import com.watchvault.ui.common.WatchCardVariant
 import com.watchvault.ui.common.formatMoney
 import com.watchvault.ui.theme.LocalVaultColors
 import com.watchvault.ui.theme.Spacing
+import com.watchvault.ui.theme.WatchVaultExtraType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,24 +61,26 @@ fun WishlistScreen(onOpenAddEdit: (String?) -> Unit, onWatchCreated: (String) ->
     var conversionTarget by remember { mutableStateOf<WishlistItem?>(null) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Wishlist") }) },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onOpenAddEdit(null) }) { Icon(Icons.Filled.Add, contentDescription = "Add wish") }
+        topBar = {
+            TopAppBar(
+                title = { Text("Wishlist") },
+                actions = { IconActionButton(Icons.Filled.Add, contentDescription = "Add wish", onClick = { onOpenAddEdit(null) }) }
+            )
         }
     ) { padding ->
         if (items.isEmpty()) {
             EmptyState(
-                headline = "Nothing on your wishlist yet.",
+                headline = "Nothing to hunt for yet.",
                 body = "Add a watch you're chasing and track it toward its target price.",
-                primaryActionLabel = "Add Wish",
+                primaryActionLabel = "Add a Wish",
                 onPrimaryAction = { onOpenAddEdit(null) },
                 modifier = Modifier.fillMaxSize().padding(padding)
             )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(Spacing.sm),
-                verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+                contentPadding = PaddingValues(horizontal = Spacing.screenH, vertical = Spacing.sm),
+                verticalArrangement = Arrangement.spacedBy(Spacing.md)
             ) {
                 items(items, key = { it.item.uuid }) { details ->
                     WishCard(
@@ -116,6 +123,11 @@ private fun wishStatusLabel(item: WishlistItem): String? {
     return if (item.priority == "Grail") "Grail" else null
 }
 
+/** [WishlistItem.priority] as a capsule — Grail reads as accent-gold, everything else as a quiet
+ *  neutral tag, so a scan down the list makes the grails jump out. */
+private fun priorityVariant(priority: String): CapsuleVariant =
+    if (priority == "Grail") CapsuleVariant.ACCENT else CapsuleVariant.NEUTRAL
+
 @Composable
 private fun WishCard(details: WishlistItemWithDetails, onClick: () -> Unit, onConvert: () -> Unit) {
     val item = details.item
@@ -123,7 +135,7 @@ private fun WishCard(details: WishlistItemWithDetails, onClick: () -> Unit, onCo
     val primaryPhoto = details.photos.firstOrNull { it.isPrimary } ?: details.photos.firstOrNull()
     val status = wishStatusLabel(item)
 
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         WatchCard(
             photo = primaryPhoto,
             brand = item.brand,
@@ -135,15 +147,17 @@ private fun WishCard(details: WishlistItemWithDetails, onClick: () -> Unit, onCo
             statusLabel = status,
             onClick = onClick
         )
-        if (item.convertedToWatchUuid == null) {
-            TextButton(onClick = onConvert, contentPadding = PaddingValues(start = Spacing.sm)) { Text("Mark as owned") }
-        } else {
-            Text(
-                "Already converted to owned",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = Spacing.sm)
-            )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.xs), modifier = Modifier.padding(start = Spacing.sm)) {
+            Capsule(item.priority, variant = priorityVariant(item.priority))
+            if (item.convertedToWatchUuid == null) {
+                TertiaryButton(text = "Mark as owned", onClick = onConvert)
+            } else {
+                Text(
+                    "Already owned",
+                    style = WatchVaultExtraType.metadata,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

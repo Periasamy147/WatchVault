@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -41,7 +43,6 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -57,7 +58,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -297,7 +300,7 @@ fun AddEditWatchScreen(watchUuid: String?, onBack: () -> Unit, onSaved: (String)
                 ) { current ->
                     Column(
                         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Spacing.screenH),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                        verticalArrangement = Arrangement.spacedBy(Spacing.lg)
                     ) {
                         when (current) {
                             WizardStep.PHOTOS -> PhotosStep(
@@ -738,6 +741,12 @@ private fun ReviewStep(
 
 // --- Shared field controls --------------------------------------------------------------------
 
+/**
+ * The one text-field treatment across the wizard: an uppercase label, the value in real body
+ * type, and a hairline underline instead of a boxed Material field — a page in a journal, not a
+ * database form. The underline turns gold on focus; that's the only affordance needed to show
+ * where the cursor is.
+ */
 @Composable
 private fun VaultTextField(
     value: String,
@@ -748,18 +757,47 @@ private fun VaultTextField(
     numeric: Boolean = false,
     minLines: Int = 1
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        trailingIcon = if (unit != null) {
-            { Text(unit, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-        } else null,
-        keyboardOptions = if (numeric) KeyboardOptions(keyboardType = KeyboardType.Decimal) else KeyboardOptions.Default,
-        minLines = minLines,
-        shape = RoundedCornerShape(Radius.card),
-        modifier = modifier.fillMaxWidth()
+    val vaultColors = LocalVaultColors.current
+    var focused by remember { mutableStateOf(false) }
+    val underlineColor by animateColorAsState(
+        if (focused) vaultColors.gold else vaultColors.border,
+        tween(Motion.quick),
+        label = "fieldUnderline"
     )
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            label.uppercase(),
+            style = WatchVaultExtraType.metadata,
+            color = if (focused) vaultColors.gold else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = Spacing.xxs)) {
+            Box(modifier = Modifier.weight(1f)) {
+                if (value.isEmpty()) {
+                    Text("—", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
+                }
+                BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                    cursorBrush = SolidColor(vaultColors.gold),
+                    keyboardOptions = if (numeric) KeyboardOptions(keyboardType = KeyboardType.Decimal) else KeyboardOptions.Default,
+                    minLines = minLines,
+                    modifier = Modifier.fillMaxWidth().onFocusChanged { focused = it.isFocused }
+                )
+            }
+            if (unit != null) {
+                Text(unit, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = Spacing.xs)
+                .height(1.dp)
+                .background(underlineColor)
+        )
+    }
 }
 
 @Composable
@@ -777,7 +815,7 @@ private fun TriStateRow(label: String, value: Boolean?, onChange: (Boolean?) -> 
 @Composable
 private fun DateField(label: String, valueMillis: Long?, onChange: (Long?) -> Unit) {
     val context = LocalContext.current
-    val displayValue = valueMillis?.let { formatDate(it) }.orEmpty()
+    val vaultColors = LocalVaultColors.current
 
     val openPicker: () -> Unit = {
         val calendar = Calendar.getInstance()
@@ -797,17 +835,24 @@ private fun DateField(label: String, valueMillis: Long?, onChange: (Long?) -> Un
         ).show()
     }
 
-    OutlinedTextField(
-        value = displayValue,
-        onValueChange = {},
-        readOnly = true,
-        label = { Text(label) },
-        trailingIcon = {
+    Column(modifier = Modifier.fillMaxWidth().clickable(onClick = openPicker)) {
+        Text(label.uppercase(), style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = Spacing.xxs)) {
+            Text(
+                valueMillis?.let { formatDate(it) } ?: "—",
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (valueMillis != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                modifier = Modifier.weight(1f)
+            )
             if (valueMillis != null) {
-                IconActionButton(Icons.Filled.Close, contentDescription = "Clear $label", onClick = { onChange(null) })
+                Text(
+                    "Clear",
+                    style = WatchVaultExtraType.metadata,
+                    color = vaultColors.gold,
+                    modifier = Modifier.clickable { onChange(null) }
+                )
             }
-        },
-        shape = RoundedCornerShape(Radius.card),
-        modifier = Modifier.fillMaxWidth().clickable(onClick = openPicker)
-    )
+        }
+        Box(modifier = Modifier.fillMaxWidth().padding(top = Spacing.xs).height(1.dp).background(vaultColors.border))
+    }
 }

@@ -13,8 +13,8 @@ android {
         applicationId = "com.watchvault"
         minSdk = 26
         targetSdk = 34
-        versionCode = 11
-        versionName = "1.10.0"
+        versionCode = 12
+        versionName = "2.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

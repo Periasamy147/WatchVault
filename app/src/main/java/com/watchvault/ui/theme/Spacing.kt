@@ -30,11 +30,21 @@ object Spacing {
     val screenH = sm2
 }
 
-/** Corner radii used across cards/images/sheets. Pill shapes ([androidx.compose.foundation.shape.CircleShape]
- *  or a very large [androidx.compose.foundation.shape.RoundedCornerShape]) are reserved for small
- *  status/priority tags only — not for cards, buttons or nav bars. */
+/**
+ * Corner-radius hierarchy — four tiers, not one radius reused everywhere:
+ *  - [hero] (28dp): the largest surfaces — Add Watch's photo well, a watch's hero image.
+ *  - [card] (20dp): watch cards, forms, the acquisition-info surface, dialogs.
+ *  - [control] (16dp): gallery thumbnails, small controls, chips-that-aren't-pills.
+ *  - [thumbnail] (16dp): compact photo thumbnails specifically (kept distinct from [control]
+ *    for callers that want to reason about "this is a photo" vs "this is a control").
+ *  - Pill shapes ([androidx.compose.foundation.shape.CircleShape] or a very large
+ *    [androidx.compose.foundation.shape.RoundedCornerShape]) are reserved for tags/status/
+ *    filter capsules only — never for cards, buttons or nav bars.
+ */
 object Radius {
-    val thumbnail = 8.dp
-    val card = 12.dp
-    val sheet = 20.dp
+    val hero = 28.dp
+    val card = 20.dp
+    val control = 16.dp
+    val thumbnail = 16.dp
+    val sheet = 28.dp
 }

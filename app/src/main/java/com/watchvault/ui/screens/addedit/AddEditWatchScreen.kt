@@ -4,13 +4,8 @@ import android.app.DatePickerDialog
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,24 +29,26 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -62,6 +59,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -69,14 +67,10 @@ import com.watchvault.data.entity.Watch
 import com.watchvault.data.entity.WatchPhoto
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
-import com.watchvault.ui.common.Capsule
-import com.watchvault.ui.common.CapsuleVariant
 import com.watchvault.ui.common.IconActionButton
 import com.watchvault.ui.common.PrimaryButton
-import com.watchvault.ui.common.TertiaryButton
 import com.watchvault.ui.common.WatchPhotoOrPlaceholder
 import com.watchvault.ui.common.formatDate
-import com.watchvault.ui.common.formatMoney
 import com.watchvault.ui.theme.LocalVaultColors
 import com.watchvault.ui.theme.Motion
 import com.watchvault.ui.theme.Radius
@@ -84,20 +78,27 @@ import com.watchvault.ui.theme.Spacing
 import com.watchvault.ui.theme.WatchVaultExtraType
 import java.util.Calendar
 
-private enum class WizardStep(val title: String) {
-    PHOTOS("Photos"), IDENTITY("Identity"), SPECIFICATIONS("Specifications"),
-    OWNERSHIP("Ownership"), CONDITION("Condition"), REVIEW("Review")
+private const val MAX_PHOTOS = 8
+private val CONDITION_OPTIONS = listOf("New", "Like New", "Excellent", "Good", "Fair", "Needs Service")
+private val MOVEMENT_OPTIONS = listOf("Automatic", "Manual", "Quartz", "Solar", "Spring Drive", "Other")
+
+private fun movementHelperText(movement: String): Pair<String, String>? = when (movement) {
+    "Automatic" -> "WRIST-POWERED" to "The movement winds automatically as the watch is worn."
+    "Manual" -> "HAND-WOUND" to "This movement must be wound by hand to keep running."
+    "Quartz" -> "BATTERY-POWERED" to "A quartz crystal regulates timekeeping electronically."
+    "Solar" -> "LIGHT-POWERED" to "Ambient light recharges the movement's power cell."
+    "Spring Drive" -> "HYBRID MOVEMENT" to "Mechanical power regulated by a quartz-controlled brake."
+    else -> null
 }
 
 /**
- * Add/Edit Watch as a real step wizard rather than one long scrolling form — cataloguing a watch
- * should feel like the emotional act of adding it to a collection, not filling out a database
- * record. Photos come first on purpose. Only Brand/Model (on the Identity step) are required;
- * "Save" in the top bar lets someone bail out early with just those two plus whatever photos
- * they've added, same as before — the wizard doesn't remove that shortcut, it just gives the
- * full path somewhere better to live than a wall of collapsible cards.
+ * Add/Edit Watch as one continuous screen — curating a watch into the vault, not filling out a
+ * form. Only Brand and Model are required; everything else can be filled in now or later. Photos,
+ * identity, purchase, ownership, condition and movement are always visible; specifications, service,
+ * documents and notes stay collapsed until the user actually wants them, per the same progressive-
+ * disclosure principle used everywhere else in the app.
  */
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditWatchScreen(watchUuid: String?, onBack: () -> Unit, onSaved: (String) -> Unit) {
     val container = LocalAppContainer.current
@@ -123,12 +124,13 @@ fun AddEditWatchScreen(watchUuid: String?, onBack: () -> Unit, onSaved: (String)
     var purchaseLocation by remember { mutableStateOf("") }
     var invoiceNumber by remember { mutableStateOf("") }
     var warrantyExpiry by remember { mutableStateOf<Long?>(null) }
-    var isFirstOwner by remember { mutableStateOf<Boolean?>(null) }
-    var box by remember { mutableStateOf<Boolean?>(null) }
-    var papers by remember { mutableStateOf<Boolean?>(null) }
+    var isFirstOwner by remember { mutableStateOf(false) }
+    var box by remember { mutableStateOf(false) }
+    var papers by remember { mutableStateOf(false) }
 
-    var movementRaw by remember { mutableStateOf("") }
     var conditionRaw by remember { mutableStateOf("") }
+    var movementRaw by remember { mutableStateOf("") }
+
     var caseDiameterMm by remember { mutableStateOf("") }
     var caseThicknessMm by remember { mutableStateOf("") }
     var caseMaterial by remember { mutableStateOf("") }
@@ -156,9 +158,8 @@ fun AddEditWatchScreen(watchUuid: String?, onBack: () -> Unit, onSaved: (String)
     val snackbarHostState = remember { SnackbarHostState() }
     var pendingSavedUuid by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
-    var stepIndex by remember { mutableIntStateOf(0) }
-    val steps = WizardStep.values()
-    val step = steps[stepIndex]
+    var conditionSheetOpen by remember { mutableStateOf(false) }
+    var movementSheetOpen by remember { mutableStateOf(false) }
 
     val handleBack: () -> Unit = {
         viewModel.discardIfUnsaved(context)
@@ -193,11 +194,11 @@ fun AddEditWatchScreen(watchUuid: String?, onBack: () -> Unit, onSaved: (String)
             purchaseLocation = existing.purchaseLocation.orEmpty()
             invoiceNumber = existing.invoiceNumber.orEmpty()
             warrantyExpiry = existing.warrantyExpiry
-            isFirstOwner = existing.isFirstOwner
-            box = existing.box
-            papers = existing.papers
-            movementRaw = existing.movementRaw.orEmpty()
+            isFirstOwner = existing.isFirstOwner ?: false
+            box = existing.box ?: false
+            papers = existing.papers ?: false
             conditionRaw = existing.conditionRaw.orEmpty()
+            movementRaw = existing.movementRaw.orEmpty()
             caseDiameterMm = existing.caseDiameterMm?.let { formatMm(it) }.orEmpty()
             caseThicknessMm = existing.caseThicknessMm?.let { formatMm(it) }.orEmpty()
             caseMaterial = existing.caseMaterial.orEmpty()
@@ -276,477 +277,386 @@ fun AddEditWatchScreen(watchUuid: String?, onBack: () -> Unit, onSaved: (String)
 
     Scaffold(
         topBar = {
-            WizardTopBar(
-                step = step,
-                stepIndex = stepIndex,
-                stepCount = steps.size,
-                isEditing = watchUuid != null,
-                canSave = canSave,
-                saving = saving,
-                onBack = handleBack,
-                onSave = save
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Box(modifier = Modifier.weight(1f)) {
-                AnimatedContent(
-                    targetState = step,
-                    transitionSpec = {
-                        fadeIn(tween(Motion.standard)) togetherWith fadeOut(tween(Motion.quick))
-                    },
-                    label = "wizardStep"
-                ) { current ->
-                    Column(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Spacing.screenH),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.lg)
-                    ) {
-                        when (current) {
-                            WizardStep.PHOTOS -> PhotosStep(
-                                photos = photos,
-                                onAdd = { uris -> viewModel.addPhotos(context, uris) },
-                                onSetPrimary = viewModel::setPrimary,
-                                onRemove = viewModel::removePhoto,
-                                onMove = viewModel::movePhoto
-                            )
-                            WizardStep.IDENTITY -> IdentityStep(
-                                brand = brand, onBrand = { brand = it },
-                                model = model, onModel = { model = it },
-                                nickname = nickname, onNickname = { nickname = it },
-                                referenceNumber = referenceNumber, onReferenceNumber = { referenceNumber = it },
-                                watchType = watchType, onWatchType = { watchType = it },
-                                serialNumber = serialNumber, onSerialNumber = { serialNumber = it }
-                            )
-                            WizardStep.SPECIFICATIONS -> SpecificationsStep(
-                                movementRaw, { movementRaw = it }, caliber, { caliber = it },
-                                powerReserve, { powerReserve = it }, complications, { complications = it },
-                                caseDiameterMm, { caseDiameterMm = it }, caseThicknessMm, { caseThicknessMm = it },
-                                caseMaterial, { caseMaterial = it }, caseColour, { caseColour = it }, caseShape, { caseShape = it },
-                                crystal, { crystal = it }, waterResistance, { waterResistance = it }, lugWidthMm, { lugWidthMm = it },
-                                dialColour, { dialColour = it }, dialType, { dialType = it },
-                                strap, { strap = it }, strapMaterial, { strapMaterial = it }, strapColour, { strapColour = it },
-                                batteryType, { batteryType = it }, batteryLife, { batteryLife = it }
-                            )
-                            WizardStep.OWNERSHIP -> OwnershipStep(
-                                estimatedValue, { estimatedValue = it }, estimatedValueCurrency, { estimatedValueCurrency = it },
-                                purchaseDate, { purchaseDate = it }, purchasePrice, { purchasePrice = it }, purchaseCurrency, { purchaseCurrency = it },
-                                seller, { seller = it }, purchaseLocation, { purchaseLocation = it }, invoiceNumber, { invoiceNumber = it },
-                                warrantyExpiry, { warrantyExpiry = it }, isFirstOwner, { isFirstOwner = it }, box, { box = it }, papers, { papers = it }
-                            )
-                            WizardStep.CONDITION -> ConditionStep(
-                                conditionRaw = conditionRaw, onConditionRaw = { conditionRaw = it },
-                                notes = notes, onNotes = { notes = it }
-                            )
-                            WizardStep.REVIEW -> ReviewStep(
-                                brand = brand, model = model, referenceNumber = referenceNumber,
-                                photo = photos.firstOrNull { it.isPrimary } ?: photos.firstOrNull(),
-                                estimatedValue = estimatedValue.toDoubleOrNull(), estimatedValueCurrency = estimatedValueCurrency,
-                                quickFacts = listOfNotNull(
-                                    movementRaw.ifBlank { null },
-                                    caseDiameterMm.toDoubleOrNull()?.let { "${formatMm(it)}mm" },
-                                    dialColour.ifBlank { null },
-                                    caseMaterial.ifBlank { null }
-                                )
-                            )
-                        }
-                    }
-                }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.xs, vertical = Spacing.xxs),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconActionButton(Icons.Filled.ChevronLeft, contentDescription = "Back", onClick = handleBack)
+                Text("ADD WATCH", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = Spacing.xs))
             }
-            WizardFooter(
-                step = step,
-                stepIndex = stepIndex,
-                stepCount = steps.size,
-                canAdvance = if (step == WizardStep.IDENTITY) canSave else true,
-                canSave = canSave,
-                saving = saving,
-                onBack = { if (stepIndex > 0) stepIndex-- },
-                onNext = { if (stepIndex < steps.lastIndex) stepIndex++ },
-                onFinish = save
-            )
-        }
-    }
-}
-
-@Composable
-private fun WizardTopBar(
-    step: WizardStep,
-    stepIndex: Int,
-    stepCount: Int,
-    isEditing: Boolean,
-    canSave: Boolean,
-    saving: Boolean,
-    onBack: () -> Unit,
-    onSave: () -> Unit
-) {
-    val vaultColors = LocalVaultColors.current
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.xs, vertical = Spacing.xxs),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            IconActionButton(Icons.Filled.Close, contentDescription = "Close", onClick = onBack)
-            Text(
-                if (isEditing) "Edit Watch" else "Add to Vault",
-                style = MaterialTheme.typography.titleMedium
-            )
-            TertiaryButton(text = "Save", onClick = onSave, enabled = canSave && !saving)
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.screenH, vertical = Spacing.xs),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.xxs)
-        ) {
-            repeat(stepCount) { index ->
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(if (index <= stepIndex) vaultColors.gold else vaultColors.border)
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            Box(modifier = Modifier.fillMaxWidth().padding(Spacing.screenH)) {
+                PrimaryButton(
+                    text = "Save Watch",
+                    onClick = save,
+                    enabled = canSave,
+                    loading = saving,
+                    modifier = Modifier.fillMaxWidth().height(56.dp)
                 )
             }
         }
-        Text(
-            step.title.uppercase(),
-            style = WatchVaultExtraType.metadata,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = Spacing.screenH, vertical = Spacing.xxs)
+    ) { padding ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(Spacing.screenH),
+            verticalArrangement = Arrangement.spacedBy(Spacing.xl)
+        ) {
+            PhotosSection(
+                photos = photos,
+                onAdd = { uris -> viewModel.addPhotos(context, uris.take(MAX_PHOTOS - photos.size)) },
+                onSetPrimary = viewModel::setPrimary,
+                onRemove = viewModel::removePhoto,
+                onMove = viewModel::movePhoto
+            )
+
+            FormSection("IDENTITY") {
+                VaultTextField(brand, { brand = it }, "Brand *")
+                VaultTextField(model, { model = it }, "Model *")
+                VaultTextField(referenceNumber, { referenceNumber = it }, "Reference Number")
+            }
+
+            FormSection("PURCHASE") {
+                DateField("Purchase Date", purchaseDate, { purchaseDate = it })
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    VaultTextField(purchasePrice, { purchasePrice = it }, "Purchase Price", numeric = true, unit = purchaseCurrency, modifier = Modifier.weight(1f))
+                    VaultTextField(estimatedValue, { estimatedValue = it }, "Estimated Value", numeric = true, unit = estimatedValueCurrency, modifier = Modifier.weight(1f))
+                }
+            }
+
+            FormSection("OWNERSHIP") {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xl)) {
+                    OwnershipSwitch("First Owner", isFirstOwner, { isFirstOwner = it }, Modifier.weight(1f))
+                    OwnershipSwitch("Box & Papers", box && papers, { box = it; papers = it }, Modifier.weight(1f))
+                }
+            }
+
+            SelectorField("CONDITION", conditionRaw.ifBlank { null }, onClick = { conditionSheetOpen = true })
+
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                SelectorField("MOVEMENT", movementRaw.ifBlank { null }, onClick = { movementSheetOpen = true })
+                movementHelperText(movementRaw)?.let { (title, body) -> MovementHelper(title, body) }
+            }
+
+            CollapsibleSection("ADVANCED DETAILS") {
+                VaultTextField(nickname, { nickname = it }, "Nickname")
+                VaultTextField(watchType, { watchType = it }, "Watch Type")
+                VaultTextField(serialNumber, { serialNumber = it }, "Serial Number")
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    VaultTextField(caseDiameterMm, { caseDiameterMm = it }, "Diameter", unit = "mm", numeric = true, modifier = Modifier.weight(1f))
+                    VaultTextField(caseThicknessMm, { caseThicknessMm = it }, "Thickness", unit = "mm", numeric = true, modifier = Modifier.weight(1f))
+                }
+                VaultTextField(caseMaterial, { caseMaterial = it }, "Case Material")
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    VaultTextField(caseColour, { caseColour = it }, "Case Colour", modifier = Modifier.weight(1f))
+                    VaultTextField(caseShape, { caseShape = it }, "Case Shape", modifier = Modifier.weight(1f))
+                }
+                VaultTextField(crystal, { crystal = it }, "Crystal")
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    VaultTextField(waterResistance, { waterResistance = it }, "Water Resistance", modifier = Modifier.weight(1f))
+                    VaultTextField(lugWidthMm, { lugWidthMm = it }, "Lug Width", unit = "mm", numeric = true, modifier = Modifier.weight(1f))
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    VaultTextField(dialColour, { dialColour = it }, "Dial Colour", modifier = Modifier.weight(1f))
+                    VaultTextField(dialType, { dialType = it }, "Dial Type", modifier = Modifier.weight(1f))
+                }
+                VaultTextField(strap, { strap = it }, "Bracelet / Strap")
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    VaultTextField(strapMaterial, { strapMaterial = it }, "Strap Material", modifier = Modifier.weight(1f))
+                    VaultTextField(strapColour, { strapColour = it }, "Strap Colour", modifier = Modifier.weight(1f))
+                }
+                VaultTextField(caliber, { caliber = it }, "Caliber")
+                VaultTextField(powerReserve, { powerReserve = it }, "Power Reserve")
+                VaultTextField(complications, { complications = it }, "Complications")
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    VaultTextField(batteryType, { batteryType = it }, "Battery Type", modifier = Modifier.weight(1f))
+                    VaultTextField(batteryLife, { batteryLife = it }, "Battery Life", modifier = Modifier.weight(1f))
+                }
+                VaultTextField(seller, { seller = it }, "Seller")
+                VaultTextField(purchaseLocation, { purchaseLocation = it }, "Purchase Location")
+                VaultTextField(invoiceNumber, { invoiceNumber = it }, "Invoice Number")
+                DateField("Warranty Expiry", warrantyExpiry, { warrantyExpiry = it })
+                VaultTextField(purchaseCurrency, { purchaseCurrency = it }, "Purchase Currency")
+                VaultTextField(estimatedValueCurrency, { estimatedValueCurrency = it }, "Estimated Value Currency")
+            }
+
+            CollapsibleSection("SERVICE HISTORY") {
+                Text(
+                    "Service records can be added from the watch's detail screen once it's saved.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            CollapsibleSection("DOCUMENTS") {
+                Text(
+                    "Invoices, warranties and certificates aren't supported yet — this section is a placeholder, not live data.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            CollapsibleSection("NOTES") {
+                VaultTextField(notes, { notes = it }, "My Notes", minLines = 4)
+            }
+
+            // Bottom padding so the last collapsible section clears the fixed bottom Save bar.
+            androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(Spacing.xxl))
+        }
+    }
+
+    if (conditionSheetOpen) {
+        SelectionBottomSheet(
+            title = "CONDITION",
+            options = CONDITION_OPTIONS,
+            selected = conditionRaw,
+            onSelect = { conditionRaw = it; conditionSheetOpen = false },
+            onDismiss = { conditionSheetOpen = false }
         )
     }
-}
-
-@Composable
-private fun WizardFooter(
-    step: WizardStep,
-    stepIndex: Int,
-    stepCount: Int,
-    canAdvance: Boolean,
-    canSave: Boolean,
-    saving: Boolean,
-    onBack: () -> Unit,
-    onNext: () -> Unit,
-    onFinish: () -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(Spacing.screenH),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-    ) {
-        if (stepIndex > 0) {
-            TertiaryButton(text = "Back", onClick = onBack, modifier = Modifier.weight(1f))
-        }
-        if (stepIndex < stepCount - 1) {
-            PrimaryButton(text = "Continue", onClick = onNext, enabled = canAdvance, modifier = Modifier.weight(2f))
-        } else {
-            PrimaryButton(text = "Add to Collection", onClick = onFinish, enabled = canSave, loading = saving, modifier = Modifier.weight(2f))
-        }
+    if (movementSheetOpen) {
+        SelectionBottomSheet(
+            title = "MOVEMENT",
+            options = MOVEMENT_OPTIONS,
+            selected = movementRaw,
+            onSelect = { movementRaw = it; movementSheetOpen = false },
+            onDismiss = { movementSheetOpen = false }
+        )
     }
 }
 
 private fun formatMm(value: Double): String =
     if (value == value.toInt().toDouble()) value.toInt().toString() else value.toString()
 
-// --- Step content -----------------------------------------------------------------------------
+// --- Sections ----------------------------------------------------------------------------------
 
 @Composable
-private fun StepIntro(headline: String, body: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(headline, style = MaterialTheme.typography.headlineSmall)
-        Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun FormSection(title: String, content: @Composable () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        Text(title, style = WatchVaultExtraType.sectionLabel, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        content()
+    }
+}
+
+/** Collapsed by default — this is what keeps the screen from overwhelming a quick add. Tapping
+ *  the header expands in place; nothing here is required to save. */
+@Composable
+private fun CollapsibleSection(title: String, content: @Composable () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(title, style = WatchVaultExtraType.sectionLabel, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(
+                Icons.Filled.ExpandMore,
+                contentDescription = if (expanded) "Collapse" else "Expand",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        if (expanded) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) { content() }
+        }
     }
 }
 
 @Composable
-private fun PhotosStep(
+private fun PhotosSection(
     photos: List<WatchPhoto>,
     onAdd: (List<android.net.Uri>) -> Unit,
     onSetPrimary: (String) -> Unit,
     onRemove: (WatchPhoto) -> Unit,
     onMove: (WatchPhoto, Int) -> Unit
 ) {
+    val vaultColors = LocalVaultColors.current
     val pickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia()
     ) { uris -> if (uris.isNotEmpty()) onAdd(uris) }
+    val launchPicker = { pickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
 
-    StepIntro("Start with a photo.", "The watch that means the most to you deserves to lead your vault.")
+    val hero = photos.firstOrNull { it.isPrimary } ?: photos.firstOrNull()
+    val rest = photos.filterNot { it.uuid == hero?.uuid }
 
-    if (photos.isEmpty()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1.3f)
-                .clip(RoundedCornerShape(Radius.card))
-                .border(1.dp, LocalVaultColors.current.border, RoundedCornerShape(Radius.card))
-                .clickable { pickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-                Icon(Icons.Filled.AddAPhoto, contentDescription = null, tint = LocalVaultColors.current.gold)
-                Text("Add photos", style = MaterialTheme.typography.bodyMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
-                Text("From your camera or gallery", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-    } else {
-        Row(
-            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-        ) {
-            photos.forEachIndexed { index, photo ->
-                PhotoThumbnail(
-                    photo = photo,
-                    isFirst = index == 0,
-                    isLast = index == photos.lastIndex,
-                    onSetPrimary = { onSetPrimary(photo.uuid) },
-                    onRemove = { onRemove(photo) },
-                    onMoveLeft = { onMove(photo, -1) },
-                    onMoveRight = { onMove(photo, 1) }
-                )
-            }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        if (hero == null) {
             Box(
                 modifier = Modifier
-                    .size(104.dp)
-                    .clip(RoundedCornerShape(Radius.card))
-                    .border(1.dp, LocalVaultColors.current.border, RoundedCornerShape(Radius.card))
-                    .clickable { pickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                    .fillMaxWidth()
+                    .aspectRatio(1.2f)
+                    .clip(RoundedCornerShape(28.dp))
+                    .border(1.dp, vaultColors.border, RoundedCornerShape(28.dp))
+                    .clickable(onClick = launchPicker),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Filled.AddAPhoto, contentDescription = "Add more photos", tint = LocalVaultColors.current.gold)
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                    Icon(Icons.Filled.AddAPhoto, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
+                    Text("Add Watch Photo", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
+                    Text("Use a clear photo of your watch.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1.2f)
+                    .clip(RoundedCornerShape(28.dp))
+                    .clickable(onClick = launchPicker)
+            ) {
+                WatchPhotoOrPlaceholder(photo = hero, modifier = Modifier.fillMaxSize())
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                Text("GALLERY", style = WatchVaultExtraType.sectionLabel, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("${photos.size}/$MAX_PHOTOS", style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+            ) {
+                rest.forEach { photo ->
+                    GalleryThumbnail(
+                        photo = photo,
+                        onSetPrimary = { onSetPrimary(photo.uuid) },
+                        onRemove = { onRemove(photo) }
+                    )
+                }
+                if (photos.size < MAX_PHOTOS) {
+                    Box(
+                        modifier = Modifier
+                            .size(88.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .border(1.dp, vaultColors.border, RoundedCornerShape(18.dp))
+                            .clickable(onClick = launchPicker),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Filled.AddAPhoto, contentDescription = "Add more photos", tint = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            if (rest.isNotEmpty()) {
+                Text(
+                    "Tap the star on a photo to make it the cover of this watch.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
-        Text(
-            "The starred photo is this watch's cover everywhere in your vault.",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+    }
+}
+
+@Composable
+private fun GalleryThumbnail(photo: WatchPhoto, onSetPrimary: () -> Unit, onRemove: () -> Unit) {
+    val vaultColors = LocalVaultColors.current
+    Box(modifier = Modifier.size(88.dp)) {
+        WatchPhotoOrPlaceholder(
+            photo = photo,
+            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(18.dp))
+        )
+        Box(
+            modifier = Modifier
+                .padding(4.dp)
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(Color.Black.copy(alpha = 0.45f))
+                .clickable(onClick = onSetPrimary)
+        ) {
+            Icon(Icons.Filled.Star, contentDescription = "Set as cover photo", tint = Color.White, modifier = Modifier.padding(4.dp))
+        }
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(4.dp)
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(Color.Black.copy(alpha = 0.45f))
+                .clickable(onClick = onRemove)
+        ) {
+            Icon(Icons.Filled.Close, contentDescription = "Remove photo", tint = Color.White, modifier = Modifier.padding(4.dp))
+        }
+    }
+}
+
+@Composable
+private fun OwnershipSwitch(label: String, checked: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+        Switch(
+            checked = checked,
+            onCheckedChange = onChange,
+            colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary)
         )
     }
 }
 
 @Composable
-private fun PhotoThumbnail(
-    photo: WatchPhoto,
-    isFirst: Boolean,
-    isLast: Boolean,
-    onSetPrimary: () -> Unit,
-    onRemove: () -> Unit,
-    onMoveLeft: () -> Unit,
-    onMoveRight: () -> Unit
-) {
+private fun SelectorField(label: String, value: String?, onClick: () -> Unit) {
     val vaultColors = LocalVaultColors.current
-    Column(modifier = Modifier.width(104.dp), verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
-        Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f)) {
-            WatchPhotoOrPlaceholder(
-                photo = photo,
-                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(Radius.thumbnail))
-            )
-            Box(
-                modifier = Modifier
-                    .padding(4.dp)
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.45f))
-                    .clickable(onClick = onSetPrimary)
-            ) {
-                Icon(
-                    Icons.Filled.Star,
-                    contentDescription = "Set as cover photo",
-                    tint = if (photo.isPrimary) vaultColors.gold else Color.White,
-                    modifier = Modifier.padding(4.dp)
-                )
-            }
-        }
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            IconActionButton(Icons.Filled.ChevronLeft, contentDescription = "Move left", onClick = onMoveLeft, modifier = Modifier.size(28.dp))
+    Column(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
+        Text(label, style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = Spacing.xxs)) {
             Text(
-                "Remove",
-                style = MaterialTheme.typography.labelSmall,
-                color = vaultColors.danger,
-                modifier = Modifier.clickable(onClick = onRemove).padding(top = 6.dp)
+                value ?: "Not set",
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (value != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.weight(1f)
             )
-            IconActionButton(Icons.Filled.ChevronRight, contentDescription = "Move right", onClick = onMoveRight, modifier = Modifier.size(28.dp))
+            Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
         }
+        Box(modifier = Modifier.fillMaxWidth().padding(top = Spacing.xs).height(1.dp).background(vaultColors.border))
     }
 }
 
 @Composable
-private fun IdentityStep(
-    brand: String, onBrand: (String) -> Unit,
-    model: String, onModel: (String) -> Unit,
-    nickname: String, onNickname: (String) -> Unit,
-    referenceNumber: String, onReferenceNumber: (String) -> Unit,
-    watchType: String, onWatchType: (String) -> Unit,
-    serialNumber: String, onSerialNumber: (String) -> Unit
-) {
-    StepIntro("What is it?", "Brand and model are all you need to keep going.")
-    VaultTextField(brand, onBrand, "Brand *")
-    VaultTextField(model, onModel, "Model *")
-    VaultTextField(nickname, onNickname, "Nickname")
-    VaultTextField(referenceNumber, onReferenceNumber, "Reference number")
-    VaultTextField(watchType, onWatchType, "Watch type")
-    VaultTextField(serialNumber, onSerialNumber, "Serial number")
-}
-
-@Composable
-private fun SpecificationsStep(
-    movementRaw: String, onMovementRaw: (String) -> Unit,
-    caliber: String, onCaliber: (String) -> Unit,
-    powerReserve: String, onPowerReserve: (String) -> Unit,
-    complications: String, onComplications: (String) -> Unit,
-    caseDiameterMm: String, onCaseDiameterMm: (String) -> Unit,
-    caseThicknessMm: String, onCaseThicknessMm: (String) -> Unit,
-    caseMaterial: String, onCaseMaterial: (String) -> Unit,
-    caseColour: String, onCaseColour: (String) -> Unit,
-    caseShape: String, onCaseShape: (String) -> Unit,
-    crystal: String, onCrystal: (String) -> Unit,
-    waterResistance: String, onWaterResistance: (String) -> Unit,
-    lugWidthMm: String, onLugWidthMm: (String) -> Unit,
-    dialColour: String, onDialColour: (String) -> Unit,
-    dialType: String, onDialType: (String) -> Unit,
-    strap: String, onStrap: (String) -> Unit,
-    strapMaterial: String, onStrapMaterial: (String) -> Unit,
-    strapColour: String, onStrapColour: (String) -> Unit,
-    batteryType: String, onBatteryType: (String) -> Unit,
-    batteryLife: String, onBatteryLife: (String) -> Unit
-) {
-    StepIntro("The details.", "Everything here is optional — add what you know.")
-
-    SpecGroupLabel("Movement")
-    VaultTextField(movementRaw, onMovementRaw, "Movement")
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        VaultTextField(caliber, onCaliber, "Caliber", modifier = Modifier.weight(1f))
-        VaultTextField(powerReserve, onPowerReserve, "Power reserve", modifier = Modifier.weight(1f))
-    }
-    VaultTextField(complications, onComplications, "Complications")
-
-    SpecGroupLabel("Case")
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        VaultTextField(caseDiameterMm, onCaseDiameterMm, "Diameter", unit = "mm", numeric = true, modifier = Modifier.weight(1f))
-        VaultTextField(caseThicknessMm, onCaseThicknessMm, "Thickness", unit = "mm", numeric = true, modifier = Modifier.weight(1f))
-    }
-    VaultTextField(caseMaterial, onCaseMaterial, "Material")
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        VaultTextField(caseColour, onCaseColour, "Colour", modifier = Modifier.weight(1f))
-        VaultTextField(caseShape, onCaseShape, "Shape", modifier = Modifier.weight(1f))
-    }
-    VaultTextField(crystal, onCrystal, "Crystal")
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        VaultTextField(waterResistance, onWaterResistance, "Water resistance", modifier = Modifier.weight(1f))
-        VaultTextField(lugWidthMm, onLugWidthMm, "Lug width", unit = "mm", numeric = true, modifier = Modifier.weight(1f))
-    }
-
-    SpecGroupLabel("Dial")
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        VaultTextField(dialColour, onDialColour, "Colour", modifier = Modifier.weight(1f))
-        VaultTextField(dialType, onDialType, "Type", modifier = Modifier.weight(1f))
-    }
-
-    SpecGroupLabel("Bracelet / Strap")
-    VaultTextField(strap, onStrap, "Type")
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        VaultTextField(strapMaterial, onStrapMaterial, "Material", modifier = Modifier.weight(1f))
-        VaultTextField(strapColour, onStrapColour, "Colour", modifier = Modifier.weight(1f))
-    }
-
-    SpecGroupLabel("Battery")
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        VaultTextField(batteryType, onBatteryType, "Type", modifier = Modifier.weight(1f))
-        VaultTextField(batteryLife, onBatteryLife, "Life", modifier = Modifier.weight(1f))
-    }
-}
-
-@Composable
-private fun SpecGroupLabel(text: String) {
-    Text(
-        text.uppercase(),
-        style = WatchVaultExtraType.metadata,
-        color = LocalVaultColors.current.gold,
-        modifier = Modifier.padding(top = Spacing.sm)
-    )
-}
-
-@Composable
-private fun OwnershipStep(
-    estimatedValue: String, onEstimatedValue: (String) -> Unit,
-    estimatedValueCurrency: String, onEstimatedValueCurrency: (String) -> Unit,
-    purchaseDate: Long?, onPurchaseDate: (Long?) -> Unit,
-    purchasePrice: String, onPurchasePrice: (String) -> Unit,
-    purchaseCurrency: String, onPurchaseCurrency: (String) -> Unit,
-    seller: String, onSeller: (String) -> Unit,
-    purchaseLocation: String, onPurchaseLocation: (String) -> Unit,
-    invoiceNumber: String, onInvoiceNumber: (String) -> Unit,
-    warrantyExpiry: Long?, onWarrantyExpiry: (Long?) -> Unit,
-    isFirstOwner: Boolean?, onIsFirstOwner: (Boolean?) -> Unit,
-    box: Boolean?, onBox: (Boolean?) -> Unit,
-    papers: Boolean?, onPapers: (Boolean?) -> Unit
-) {
-    StepIntro("Its story so far.", "How you came to own it, and what it's worth.")
-
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        VaultTextField(estimatedValue, onEstimatedValue, "Estimated value", numeric = true, modifier = Modifier.weight(1f))
-        VaultTextField(estimatedValueCurrency, onEstimatedValueCurrency, "Currency", modifier = Modifier.width(96.dp))
-    }
-    DateField("Purchase date", purchaseDate, onPurchaseDate)
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        VaultTextField(purchasePrice, onPurchasePrice, "Purchase price", numeric = true, modifier = Modifier.weight(1f))
-        VaultTextField(purchaseCurrency, onPurchaseCurrency, "Currency", modifier = Modifier.width(96.dp))
-    }
-    VaultTextField(seller, onSeller, "Seller")
-    VaultTextField(purchaseLocation, onPurchaseLocation, "Purchase location")
-    VaultTextField(invoiceNumber, onInvoiceNumber, "Invoice number")
-    DateField("Warranty expiry", warrantyExpiry, onWarrantyExpiry)
-    TriStateRow("First owner", isFirstOwner, onIsFirstOwner)
-    TriStateRow("Box", box, onBox)
-    TriStateRow("Papers", papers, onPapers)
-}
-
-@Composable
-private fun ConditionStep(conditionRaw: String, onConditionRaw: (String) -> Unit, notes: String, onNotes: (String) -> Unit) {
-    StepIntro("Condition & notes.", "How it wears today, and anything personal worth remembering.")
-    VaultTextField(conditionRaw, onConditionRaw, "Condition")
-    VaultTextField(notes, onNotes, "Notes", minLines = 4)
-}
-
-@Composable
-private fun ReviewStep(
-    brand: String,
-    model: String,
-    referenceNumber: String,
-    photo: WatchPhoto?,
-    estimatedValue: Double?,
-    estimatedValueCurrency: String,
-    quickFacts: List<String>
-) {
-    val vaultColors = LocalVaultColors.current
-    StepIntro("Ready to add.", "Take a look before it joins your vault.")
-    Box(
-        modifier = Modifier.fillMaxWidth().aspectRatio(1.1f).clip(RoundedCornerShape(Radius.card))
+private fun MovementHelper(title: String, body: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f))
+            .padding(Spacing.md),
+        verticalArrangement = Arrangement.spacedBy(Spacing.xxs)
     ) {
-        WatchPhotoOrPlaceholder(photo = photo, modifier = Modifier.fillMaxSize())
+        Text(title, style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.primary)
+        Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        if (brand.isNotBlank()) Text(brand.uppercase(), style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(model.ifBlank { "Untitled watch" }, style = MaterialTheme.typography.headlineSmall)
-        if (referenceNumber.isNotBlank()) {
-            Text("Ref. $referenceNumber", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        if (estimatedValue != null) {
-            Text(formatMoney(estimatedValue, estimatedValueCurrency), style = MaterialTheme.typography.titleMedium, color = vaultColors.gold)
-        }
-    }
-    if (quickFacts.isNotEmpty()) {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs), modifier = Modifier.horizontalScroll(rememberScrollState())) {
-            quickFacts.forEach { Capsule(it, variant = CapsuleVariant.NEUTRAL) }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SelectionBottomSheet(title: String, options: List<String>, selected: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl)) {
+            Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = Spacing.sm))
+            options.forEach { option ->
+                val isSelected = option == selected
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else Color.Transparent)
+                        .clickable { onSelect(option) }
+                        .padding(horizontal = Spacing.md, vertical = Spacing.md)
+                        .height(24.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        option,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
         }
     }
 }
 
 // --- Shared field controls --------------------------------------------------------------------
 
-/**
- * The one text-field treatment across the wizard: an uppercase label, the value in real body
- * type, and a hairline underline instead of a boxed Material field — a page in a journal, not a
- * database form. The underline turns gold on focus; that's the only affordance needed to show
- * where the cursor is.
- */
 @Composable
 private fun VaultTextField(
     value: String,
@@ -760,7 +670,7 @@ private fun VaultTextField(
     val vaultColors = LocalVaultColors.current
     var focused by remember { mutableStateOf(false) }
     val underlineColor by animateColorAsState(
-        if (focused) vaultColors.gold else vaultColors.border,
+        if (focused) MaterialTheme.colorScheme.primary else vaultColors.border,
         tween(Motion.quick),
         label = "fieldUnderline"
     )
@@ -769,9 +679,12 @@ private fun VaultTextField(
         Text(
             label.uppercase(),
             style = WatchVaultExtraType.metadata,
-            color = if (focused) vaultColors.gold else MaterialTheme.colorScheme.onSurfaceVariant
+            color = if (focused) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
         Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = Spacing.xxs)) {
+            if (unit != null) {
+                Text(unit, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(end = 4.dp))
+            }
             Box(modifier = Modifier.weight(1f)) {
                 if (value.isEmpty()) {
                     Text("—", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
@@ -780,35 +693,14 @@ private fun VaultTextField(
                     value = value,
                     onValueChange = onValueChange,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                    cursorBrush = SolidColor(vaultColors.gold),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     keyboardOptions = if (numeric) KeyboardOptions(keyboardType = KeyboardType.Decimal) else KeyboardOptions.Default,
                     minLines = minLines,
                     modifier = Modifier.fillMaxWidth().onFocusChanged { focused = it.isFocused }
                 )
             }
-            if (unit != null) {
-                Text(unit, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
         }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = Spacing.xs)
-                .height(1.dp)
-                .background(underlineColor)
-        )
-    }
-}
-
-@Composable
-private fun TriStateRow(label: String, value: Boolean?, onChange: (Boolean?) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        Text(label, style = MaterialTheme.typography.bodyMedium)
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-            Capsule("Yes", variant = if (value == true) CapsuleVariant.SELECTED else CapsuleVariant.OUTLINED, onClick = { onChange(true) })
-            Capsule("No", variant = if (value == false) CapsuleVariant.SELECTED else CapsuleVariant.OUTLINED, onClick = { onChange(false) })
-            Capsule("Unknown", variant = if (value == null) CapsuleVariant.SELECTED else CapsuleVariant.OUTLINED, onClick = { onChange(null) })
-        }
+        Box(modifier = Modifier.fillMaxWidth().padding(top = Spacing.xs).height(1.dp).background(underlineColor))
     }
 }
 
@@ -848,7 +740,7 @@ private fun DateField(label: String, valueMillis: Long?, onChange: (Long?) -> Un
                 Text(
                     "Clear",
                     style = WatchVaultExtraType.metadata,
-                    color = vaultColors.gold,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable { onChange(null) }
                 )
             }

@@ -38,6 +38,7 @@ import com.watchvault.data.migration.WishToOwnedConverter
 import com.watchvault.data.relation.WishlistItemWithDetails
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
+import com.watchvault.ui.common.CapsuleVariant
 import com.watchvault.ui.common.EmptyState
 import com.watchvault.ui.common.IconActionButton
 import com.watchvault.ui.common.TertiaryButton
@@ -135,9 +136,9 @@ private fun WishCard(details: WishlistItemWithDetails, onClick: () -> Unit, onCo
             model = item.model,
             variant = WatchCardVariant.LIST,
             primaryValueText = "Current ${formatMoney(item.currentPrice, item.currency)}",
-            primaryValueColor = vaultColors.gold,
             secondaryText = "Target ${formatMoney(item.targetPrice, item.currency)}",
             statusLabel = status,
+            statusVariant = if (status == "Grail") CapsuleVariant.ACCENT else CapsuleVariant.SUCCESS,
             onClick = onClick
         )
         Row(

@@ -21,6 +21,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -185,16 +186,9 @@ fun WatchDetailScreen(watchUuid: String, onBack: () -> Unit, onEdit: (String) ->
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
             IdentityBlock(watch)
-            ValueBlock(watch, vaultColors.gold, vaultColors.success, vaultColors.danger)
+            ValueBlock(watch, vaultColors.success, vaultColors.danger)
 
-            val ownershipRows = ownershipRows(watch)
-            if (ownershipRows.isNotEmpty()) {
-                DividedSection(title = "OWNERSHIP") {
-                    Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                        ownershipRows.forEach { (label, value) -> LabeledRow(label, value) }
-                    }
-                }
-            }
+            AcquisitionInfo(watch)
 
             val records = details?.maintenanceRecords ?: emptyList()
             DividedSection(title = "SERVICE HISTORY") { ServiceTimeline(records, watch.purchaseCurrency) }
@@ -205,7 +199,7 @@ fun WatchDetailScreen(watchUuid: String, onBack: () -> Unit, onEdit: (String) ->
             }
 
             if (!watch.notes.isNullOrBlank()) {
-                DividedSection(title = "NOTES") { CollapsibleNotes(watch.notes) }
+                DividedSection(title = "MY NOTES") { CollapsibleNotes(watch.notes) }
             }
 
             val provenanceRows = provenanceRows(watch)
@@ -279,13 +273,19 @@ private fun IdentityBlock(watch: Watch) {
 }
 
 @Composable
-private fun ValueBlock(watch: Watch, goldColor: Color, successColor: Color, dangerColor: Color) {
+private fun ValueBlock(watch: Watch, successColor: Color, dangerColor: Color) {
     val current = watch.estimatedValue ?: watch.purchasePrice
     val currentCurrency = watch.estimatedValueCurrency ?: watch.purchaseCurrency
     if (current == null) return
+    val isEstimate = watch.estimatedValue != null
 
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(formatMoney(current, currentCurrency), style = MaterialTheme.typography.headlineSmall, color = goldColor)
+        Text(
+            if (isEstimate) "ESTIMATED VALUE" else "PURCHASE PRICE",
+            style = WatchVaultExtraType.metadata,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(formatMoney(current, currentCurrency), style = MaterialTheme.typography.headlineSmall)
         val purchase = watch.purchasePrice
         val estimated = watch.estimatedValue
         if (estimated != null && purchase != null) {
@@ -302,13 +302,40 @@ private fun ValueBlock(watch: Watch, goldColor: Color, successColor: Color, dang
     }
 }
 
-private fun ownershipRows(watch: Watch): List<Pair<String, String>> {
-    val rows = mutableListOf<Pair<String, String>>()
-    watch.purchaseDate?.let { rows += "Purchased" to formatDate(it) }
-    watch.purchasePrice?.let { rows += "Price" to formatMoney(it, watch.purchaseCurrency) }
-    watch.conditionRaw?.let { rows += "Condition" to it }
-    boxPapersLabel(watch)?.let { rows += "Box & Papers" to it }
-    return rows
+/** Acquisition facts read as one logical group — a single rounded surface is the one place on
+ *  this screen a container earns its keep, since these fields genuinely belong together rather
+ *  than each being its own independent fact. */
+@Composable
+private fun AcquisitionInfo(watch: Watch) {
+    val purchaseDateStr = watch.purchaseDate?.let { formatDate(it) }
+    val purchasePriceStr = watch.purchasePrice?.let { formatMoney(it, watch.purchaseCurrency) }
+    val conditionStr = watch.conditionRaw
+    val firstOwnerStr = watch.isFirstOwner?.let { if (it) "Yes" else "No" }
+    val boxPapersStr = boxPapersLabel(watch)
+    if (purchaseDateStr == null && purchasePriceStr == null && conditionStr == null && firstOwnerStr == null && boxPapersStr == null) return
+
+    val vaultColors = LocalVaultColors.current
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Text("ACQUISITION INFO", style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(vaultColors.surfaceElevated)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            purchaseDateStr?.let { LabeledRow("Purchase Date", it) }
+            purchasePriceStr?.let { LabeledRow("Purchase Price", it) }
+            conditionStr?.let { LabeledRow("Condition", it) }
+            if (firstOwnerStr != null || boxPapersStr != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    firstOwnerStr?.let { LabeledRow("First Owner", it, modifier = Modifier.weight(1f)) }
+                    boxPapersStr?.let { LabeledRow("Box & Papers", it, modifier = Modifier.weight(1f)) }
+                }
+            }
+        }
+    }
 }
 
 private fun boxPapersLabel(watch: Watch): String? {
@@ -413,12 +440,11 @@ private fun specGroups(watch: Watch): List<Pair<String, List<Pair<String, String
 
 @Composable
 private fun GroupedSpecifications(groups: List<Pair<String, List<Pair<String, String>>>>) {
-    val vaultColors = LocalVaultColors.current
     Column(verticalArrangement = Arrangement.spacedBy(28.dp)) {
         groups.forEach { (label, rows) ->
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text(label, style = WatchVaultExtraType.metadata, color = vaultColors.gold)
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(label, style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
                     rows.forEach { (factLabel, value) ->
                         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                             Text(
@@ -443,7 +469,6 @@ private fun GroupedSpecifications(groups: List<Pair<String, List<Pair<String, St
 @Composable
 private fun CollapsibleNotes(notes: String) {
     var expanded by remember { mutableStateOf(false) }
-    val vaultColors = LocalVaultColors.current
     val isLong = notes.length > 220
     val shown = if (expanded || !isLong) notes else notes.take(220).trimEnd() + "…"
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
@@ -452,7 +477,7 @@ private fun CollapsibleNotes(notes: String) {
             Text(
                 if (expanded) "Show less" else "Show more",
                 style = MaterialTheme.typography.labelSmall,
-                color = vaultColors.gold,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable { expanded = !expanded }
             )
         }
@@ -508,8 +533,8 @@ private fun DividedSection(title: String?, content: @Composable () -> Unit) {
  *  label-left-value-right row. Reads like a catalogue entry, and scales to a long value (a
  *  seller's name, a location) without the label and value fighting for the same line. */
 @Composable
-private fun LabeledRow(label: String, value: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+private fun LabeledRow(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(label.uppercase(), style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(value, style = MaterialTheme.typography.bodyLarge)
     }

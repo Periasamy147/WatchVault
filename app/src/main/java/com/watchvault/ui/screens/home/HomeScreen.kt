@@ -129,8 +129,8 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("View Collection", style = MaterialTheme.typography.labelLarge, color = vaultColors.gold)
-                Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = vaultColors.gold, modifier = Modifier.size(18.dp))
+                Text("View Collection", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
             }
         }
     }
@@ -152,7 +152,7 @@ private fun HeroGreeting(stats: HomeStats) {
         Text("Your Collection", style = WatchVaultExtraType.heroTitle)
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xl), modifier = Modifier.padding(top = Spacing.sm)) {
             Column {
-                Text("${stats.totalWatches}", style = WatchVaultExtraType.statisticLarge, color = LocalVaultColors.current.gold)
+                Text("${stats.totalWatches}", style = WatchVaultExtraType.statisticLarge)
                 Text(if (stats.totalWatches == 1) "TIMEPIECE" else "TIMEPIECES", style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Column {
@@ -169,11 +169,10 @@ private fun HeroGreeting(stats: HomeStats) {
 @Composable
 private fun FeaturedTimepiece(details: WatchWithDetails, onClick: () -> Unit) {
     val watch = details.watch
-    val vaultColors = LocalVaultColors.current
     val primaryPhoto = details.photos.firstOrNull { it.isPrimary } ?: details.photos.firstOrNull()
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("FEATURED", style = WatchVaultExtraType.metadata, color = vaultColors.gold)
+        Text("FEATURED", style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -212,7 +211,8 @@ private fun FeaturedTimepiece(details: WatchWithDetails, onClick: () -> Unit) {
                 Text(
                     formatMoney(watch.estimatedValue ?: watch.purchasePrice, watch.estimatedValueCurrency ?: watch.purchaseCurrency),
                     style = MaterialTheme.typography.titleMedium,
-                    color = vaultColors.goldLight
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
@@ -252,7 +252,7 @@ private fun CollectionInsights(stats: HomeStats) {
     val mostValuable = stats.mostValuable
     if (mostValuable == null && stats.distinctBrandCount == 0) return
 
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
         Text("COLLECTION INSIGHTS", style = WatchVaultExtraType.sectionLabel, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xl)) {
             mostValuable?.let { watch ->
@@ -262,13 +262,35 @@ private fun CollectionInsights(stats: HomeStats) {
                 InsightValue(label = "BRANDS REPRESENTED", value = "${stats.distinctBrandCount}")
             }
         }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xl)) {
+            stats.newestPurchase?.let { watch ->
+                InsightValue(
+                    label = "NEWEST ADDITION",
+                    value = "${watch.brand} ${watch.model}",
+                    caption = watch.purchaseDate?.let { yearOf(it) }
+                )
+            }
+            stats.oldestPurchase?.takeIf { it.uuid != stats.newestPurchase?.uuid }?.let { watch ->
+                InsightValue(
+                    label = "OLDEST IN THE VAULT",
+                    value = "${watch.brand} ${watch.model}",
+                    caption = watch.purchaseDate?.let { yearOf(it) }
+                )
+            }
+        }
     }
 }
 
+private fun yearOf(epochMillis: Long): String =
+    java.text.SimpleDateFormat("yyyy", java.util.Locale.getDefault()).format(java.util.Date(epochMillis))
+
 @Composable
-private fun InsightValue(label: String, value: String) {
+private fun InsightValue(label: String, value: String, caption: String? = null) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(value, style = MaterialTheme.typography.titleMedium, maxLines = 1)
+        if (caption != null) {
+            Text(caption, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         Text(label, style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
@@ -296,7 +318,6 @@ private fun WishlistPreviewLine(stats: HomeStats, onOpenWishlist: () -> Unit) {
 
 @Composable
 private fun QuickAddAction(onAddWatch: () -> Unit) {
-    val vaultColors = LocalVaultColors.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -307,7 +328,7 @@ private fun QuickAddAction(onAddWatch: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(Icons.Filled.Add, contentDescription = null, tint = vaultColors.gold, modifier = Modifier.size(18.dp))
+        Icon(Icons.Filled.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
         Text("Add a watch to your vault", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
     }
 }

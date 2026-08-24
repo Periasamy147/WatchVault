@@ -1,8 +1,12 @@
 package com.watchvault.ui.common
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,15 +22,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Watch
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.watchvault.data.entity.WatchPhoto
 import com.watchvault.ui.theme.LocalVaultColors
+import com.watchvault.ui.theme.Motion
 import com.watchvault.ui.theme.Radius
 import com.watchvault.ui.theme.Spacing
 import com.watchvault.ui.theme.WatchVaultExtraType
@@ -137,32 +149,17 @@ fun WatchSilhouettePlaceholder(modifier: Modifier = Modifier) {
     }
 }
 
-/** Small pill-shaped status/priority tag — the one place in the app a true pill shape is used,
- *  reserved for exactly this kind of short at-a-glance label (e.g. "At Target", "Grail"). */
-@Composable
-fun StatusChip(text: String, modifier: Modifier = Modifier, color: Color? = null) {
-    val vaultColors = LocalVaultColors.current
-    val tint = color ?: vaultColors.gold
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(tint.copy(alpha = 0.14f))
-            .padding(horizontal = Spacing.xs, vertical = Spacing.xxs)
-    ) {
-        Text(text, style = MaterialTheme.typography.labelSmall, color = tint)
-    }
-}
-
-/** Which layout a [WatchCard] renders as. GRID is a vertical card (photo over text, used in the
- *  Collection grid and Home's recently-added strip). LIST is a horizontal row (photo beside text,
- *  used in the Collection list view and Wishlist). */
+/** Which layout a [WatchCard] renders as. GRID is a vertical, image-dominant card (used in the
+ *  Collection grid and Home's recently-added strip). LIST is a horizontal row (used in the
+ *  Collection list view and Wishlist), kept dense but still image-led. */
 enum class WatchCardVariant { GRID, LIST }
 
 /**
- * The one card used everywhere a watch (owned or wishlist) is shown as a compact preview: a photo,
- * brand, model, a primary value figure and an optional secondary line/status tag. Collection,
- * Wishlist and Home's recently-added strip all go through this instead of each maintaining their
- * own near-duplicate card composable.
+ * The one card used everywhere a watch (owned or wishlist) is shown as a compact preview.
+ * Photography is the point: no border, no card background — the image fills its frame edge to
+ * edge and the text sits directly on the canvas beneath/beside it, the way an editorial photo
+ * caption reads rather than a bordered database row. Collection, Wishlist and Home's
+ * recently-added strip all go through this instead of each maintaining their own card.
  */
 @Composable
 fun WatchCard(
@@ -180,21 +177,27 @@ fun WatchCard(
 ) {
     val vaultColors = LocalVaultColors.current
     val goldColor = vaultColors.gold
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.97f else 1f, tween(Motion.quick), label = "cardPress")
 
     when (variant) {
         WatchCardVariant.GRID -> Column(
             modifier = modifier
+                .graphicsLayer { scaleX = scale; scaleY = scale }
                 .clip(RoundedCornerShape(Radius.card))
-                .border(1.dp, vaultColors.border, RoundedCornerShape(Radius.card))
-                .clickable(onClick = onClick)
+                .clickable(interactionSource = interaction, indication = null, onClick = onClick)
         ) {
             Box {
-                WatchPhotoOrPlaceholder(photo = photo, modifier = Modifier.fillMaxWidth().aspectRatio(1f))
+                WatchPhotoOrPlaceholder(
+                    photo = photo,
+                    modifier = Modifier.fillMaxWidth().aspectRatio(0.84f).clip(RoundedCornerShape(Radius.card))
+                )
                 if (statusLabel != null) {
-                    StatusChip(statusLabel, modifier = Modifier.padding(Spacing.xs))
+                    Capsule(statusLabel, variant = CapsuleVariant.ACCENT, modifier = Modifier.padding(Spacing.xs))
                 }
             }
-            Column(modifier = Modifier.padding(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
+            Column(modifier = Modifier.padding(top = Spacing.xs), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 Text(brand.uppercase(), style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(model, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (primaryValueText != null) {
@@ -208,23 +211,23 @@ fun WatchCard(
         WatchCardVariant.LIST -> Row(
             modifier = modifier
                 .fillMaxWidth()
+                .graphicsLayer { scaleX = scale; scaleY = scale }
                 .clip(RoundedCornerShape(Radius.card))
-                .border(1.dp, vaultColors.border, RoundedCornerShape(Radius.card))
-                .clickable(onClick = onClick),
-            verticalAlignment = Alignment.CenterVertically
+                .clickable(interactionSource = interaction, indication = null, onClick = onClick),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
         ) {
             WatchPhotoOrPlaceholder(
                 photo = photo,
-                modifier = Modifier.size(76.dp).clip(RoundedCornerShape(topStart = Radius.card, bottomStart = Radius.card))
+                modifier = Modifier.size(84.dp).clip(RoundedCornerShape(Radius.card))
             )
-            Column(modifier = Modifier.weight(1f).padding(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
+            Column(modifier = Modifier.weight(1f).padding(vertical = Spacing.xxs), verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(brand.uppercase(), style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(model, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     if (statusLabel != null) {
-                        StatusChip(statusLabel)
+                        Capsule(statusLabel, variant = CapsuleVariant.ACCENT)
                     }
                 }
                 if (primaryValueText != null) {
@@ -286,23 +289,30 @@ fun EmptyState(
     }
 }
 
-/** Thin, consistently-shaped wrapper around [Button] — corner radius and padding match [Radius.card]
- *  everywhere a primary action button appears, instead of each screen's default Material shape. */
+/**
+ * High-emphasis action ("Save Watch", "Add to Collection"). [loading] swaps the label for a small
+ * spinner and disables the button — used for saves/network calls so the user gets a state instead
+ * of a second tap landing on a dead control.
+ */
 @Composable
-fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, loading: Boolean = false) {
     Button(
         onClick = onClick,
-        enabled = enabled,
+        enabled = enabled && !loading,
         shape = RoundedCornerShape(Radius.card),
         contentPadding = ButtonDefaults.ContentPadding,
         modifier = modifier
     ) {
-        Text(text)
+        if (loading) {
+            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+        } else {
+            Text(text)
+        }
     }
 }
 
-/** Thin, consistently-shaped wrapper around [OutlinedButton] — the secondary/quiet counterpart to
- *  [PrimaryButton]. */
+/** Supporting action, one step down from [PrimaryButton] — an outlined control with the same
+ *  shape language. */
 @Composable
 fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     OutlinedButton(
@@ -312,6 +322,60 @@ fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
         modifier = modifier
     ) {
         Text(text)
+    }
+}
+
+/** Lowest-emphasis action — a bare text label, no container. For things like "Enter manually" or
+ *  "Skip" that must never compete visually with the screen's primary/secondary buttons. */
+@Composable
+fun TertiaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    TextButton(onClick = onClick, enabled = enabled, modifier = modifier) {
+        Text(text)
+    }
+}
+
+/** A destructive action ("Delete", "Remove Photo") — same shape as [SecondaryButton] but tinted
+ *  with the app's danger color so it reads as irreversible before the user taps it. */
+@Composable
+fun DestructiveButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    val vaultColors = LocalVaultColors.current
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        shape = RoundedCornerShape(Radius.card),
+        border = androidx.compose.foundation.BorderStroke(1.dp, vaultColors.danger.copy(alpha = 0.5f)),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = vaultColors.danger),
+        modifier = modifier
+    ) {
+        Text(text)
+    }
+}
+
+/** A circular icon-only tap target (favorite, share, more, close) with a consistent 40dp touch
+ *  target regardless of the icon's intrinsic size, and a subtle scrim-friendly background variant
+ *  for use over photography ([onImage] = true). */
+@Composable
+fun IconActionButton(
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    onImage: Boolean = false,
+    tint: Color? = null
+) {
+    val vaultColors = LocalVaultColors.current
+    val background = if (onImage) Color.Black.copy(alpha = 0.35f) else Color.Transparent
+    val contentColor = tint ?: if (onImage) Color.White else MaterialTheme.colorScheme.onSurface
+    Box(
+        modifier = modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(background),
+        contentAlignment = Alignment.Center
+    ) {
+        IconButton(onClick = onClick) {
+            Icon(icon, contentDescription = contentDescription, tint = contentColor)
+        }
     }
 }
 

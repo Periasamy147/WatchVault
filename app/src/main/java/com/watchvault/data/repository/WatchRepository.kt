@@ -35,6 +35,14 @@ class WatchRepository(
         if (photos.isNotEmpty()) watchPhotoDao.insertAll(photos)
     }
 
+    suspend fun photosForWatch(uuid: String): List<WatchPhoto> = watchPhotoDao.forWatch(uuid)
+
+    suspend fun updatePhotos(photos: List<WatchPhoto>) {
+        if (photos.isNotEmpty()) watchPhotoDao.updateAll(photos)
+    }
+
+    suspend fun deletePhoto(photo: WatchPhoto) = watchPhotoDao.delete(photo)
+
     suspend fun addMaintenanceRecord(record: MaintenanceRecord) = maintenanceRecordDao.insert(record)
 
     suspend fun maintenanceHistory(watchUuid: String): List<MaintenanceRecord> =

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -59,10 +58,7 @@ import com.watchvault.data.entity.MaintenanceRecord
 import com.watchvault.data.entity.Watch
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
-import com.watchvault.ui.common.Capsule
-import com.watchvault.ui.common.CapsuleVariant
 import com.watchvault.ui.common.WatchPhotoOrPlaceholder
-import com.watchvault.ui.common.WatchSpecGrid
 import com.watchvault.ui.common.formatDate
 import com.watchvault.ui.common.formatMoney
 import com.watchvault.ui.theme.LocalVaultColors
@@ -185,17 +181,16 @@ fun WatchDetailScreen(watchUuid: String, onBack: () -> Unit, onEdit: (String) ->
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(horizontal = 24.dp, vertical = 28.dp),
+            verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
             IdentityBlock(watch)
             ValueBlock(watch, vaultColors.gold, vaultColors.success, vaultColors.danger)
-            QuickFactsRow(watch)
 
             val ownershipRows = ownershipRows(watch)
             if (ownershipRows.isNotEmpty()) {
                 DividedSection(title = "OWNERSHIP") {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
                         ownershipRows.forEach { (label, value) -> LabeledRow(label, value) }
                     }
                 }
@@ -304,28 +299,6 @@ private fun ValueBlock(watch: Watch, goldColor: Color, successColor: Color, dang
                 color = if (diff >= 0) successColor else dangerColor
             )
         }
-    }
-}
-
-/** "Automatic · 44mm · Green dial · Stainless steel" as a row of quiet capsules rather than one
- *  run-on line of uppercase text — the app's key-metadata language everywhere else (WatchCard
- *  status, filters) is capsules, so the detail page's own headline facts should match it. Renders
- *  nothing when no fact is known. */
-@Composable
-private fun QuickFactsRow(watch: Watch) {
-    val facts = listOfNotNull(
-        watch.movementNormalized ?: watch.movementRaw,
-        watch.caseDiameterMm?.let { "${formatMm(it)}mm" },
-        watch.dialColour,
-        watch.caseMaterial,
-        watch.waterResistance
-    )
-    if (facts.isEmpty()) return
-    Row(
-        modifier = Modifier.horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
-    ) {
-        facts.forEach { fact -> Capsule(fact, variant = CapsuleVariant.NEUTRAL) }
     }
 }
 
@@ -441,11 +414,27 @@ private fun specGroups(watch: Watch): List<Pair<String, List<Pair<String, String
 @Composable
 private fun GroupedSpecifications(groups: List<Pair<String, List<Pair<String, String>>>>) {
     val vaultColors = LocalVaultColors.current
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
+    Column(verticalArrangement = Arrangement.spacedBy(28.dp)) {
         groups.forEach { (label, rows) ->
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Text(label, style = WatchVaultExtraType.metadata, color = vaultColors.gold)
-                WatchSpecGrid(rows)
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    rows.forEach { (factLabel, value) ->
+                        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                factLabel.uppercase(),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                value,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -515,14 +504,14 @@ private fun DividedSection(title: String?, content: @Composable () -> Unit) {
     }
 }
 
+/** An uppercase caption over its value, stacked — "ACQUIRED / 24 Aug 2026" — rather than a
+ *  label-left-value-right row. Reads like a catalogue entry, and scales to a long value (a
+ *  seller's name, a location) without the label and value fighting for the same line. */
 @Composable
 private fun LabeledRow(label: String, value: String) {
-    androidx.compose.foundation.layout.Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.bodyMedium)
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(label.uppercase(), style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, style = MaterialTheme.typography.bodyLarge)
     }
 }
 

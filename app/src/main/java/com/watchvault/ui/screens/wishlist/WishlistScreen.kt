@@ -38,8 +38,6 @@ import com.watchvault.data.migration.WishToOwnedConverter
 import com.watchvault.data.relation.WishlistItemWithDetails
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
-import com.watchvault.ui.common.Capsule
-import com.watchvault.ui.common.CapsuleVariant
 import com.watchvault.ui.common.EmptyState
 import com.watchvault.ui.common.IconActionButton
 import com.watchvault.ui.common.TertiaryButton
@@ -123,11 +121,6 @@ private fun wishStatusLabel(item: WishlistItem): String? {
     return if (item.priority == "Grail") "Grail" else null
 }
 
-/** [WishlistItem.priority] as a capsule — Grail reads as accent-gold, everything else as a quiet
- *  neutral tag, so a scan down the list makes the grails jump out. */
-private fun priorityVariant(priority: String): CapsuleVariant =
-    if (priority == "Grail") CapsuleVariant.ACCENT else CapsuleVariant.NEUTRAL
-
 @Composable
 private fun WishCard(details: WishlistItemWithDetails, onClick: () -> Unit, onConvert: () -> Unit) {
     val item = details.item
@@ -147,16 +140,23 @@ private fun WishCard(details: WishlistItemWithDetails, onClick: () -> Unit, onCo
             statusLabel = status,
             onClick = onClick
         )
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.xs), modifier = Modifier.padding(start = Spacing.sm)) {
-            Capsule(item.priority, variant = priorityVariant(item.priority))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth().padding(start = Spacing.sm)
+        ) {
+            Column {
+                Text("PRIORITY", style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    item.priority,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (item.priority == "Grail") vaultColors.gold else MaterialTheme.colorScheme.onSurface
+                )
+            }
             if (item.convertedToWatchUuid == null) {
                 TertiaryButton(text = "Mark as owned", onClick = onConvert)
             } else {
-                Text(
-                    "Already owned",
-                    style = WatchVaultExtraType.metadata,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text("Already owned", style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

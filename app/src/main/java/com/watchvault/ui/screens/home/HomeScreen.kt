@@ -22,7 +22,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Diamond
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,8 +41,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.watchvault.data.relation.WatchWithDetails
 import com.watchvault.di.GenericViewModelFactory
 import com.watchvault.di.LocalAppContainer
-import com.watchvault.ui.common.Capsule
-import com.watchvault.ui.common.CapsuleVariant
 import com.watchvault.ui.common.EmptyState
 import com.watchvault.ui.common.IconActionButton
 import com.watchvault.ui.common.WatchCard
@@ -139,11 +136,21 @@ fun HomeScreen(
     }
 }
 
+private fun timeOfDayGreeting(): String {
+    val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+    return when {
+        hour < 12 -> "GOOD MORNING"
+        hour < 17 -> "GOOD AFTERNOON"
+        else -> "GOOD EVENING"
+    }
+}
+
 @Composable
 private fun HeroGreeting(stats: HomeStats) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        Text(timeOfDayGreeting(), style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text("Your Collection", style = WatchVaultExtraType.heroTitle)
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xl), modifier = Modifier.padding(top = Spacing.sm)) {
             Column {
                 Text("${stats.totalWatches}", style = WatchVaultExtraType.statisticLarge, color = LocalVaultColors.current.gold)
                 Text(if (stats.totalWatches == 1) "TIMEPIECE" else "TIMEPIECES", style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -153,7 +160,7 @@ private fun HeroGreeting(stats: HomeStats) {
                     formatMoney(stats.collectionValue.takeIf { stats.totalWatches > 0 }, "INR"),
                     style = WatchVaultExtraType.statisticLarge
                 )
-                Text("COLLECTION VALUE", style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("EST. COLLECTION", style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -249,30 +256,18 @@ private fun CollectionInsights(stats: HomeStats) {
         Text("COLLECTION INSIGHTS", style = WatchVaultExtraType.sectionLabel, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xl)) {
             mostValuable?.let { watch ->
-                InsightValue(
-                    icon = Icons.Filled.Diamond,
-                    label = "MOST VALUABLE",
-                    value = "${watch.brand} ${watch.model}"
-                )
+                InsightValue(label = "MOST VALUABLE", value = "${watch.brand} ${watch.model}")
             }
             if (stats.distinctBrandCount > 0) {
-                InsightValue(
-                    icon = null,
-                    label = "BRANDS REPRESENTED",
-                    value = "${stats.distinctBrandCount}"
-                )
+                InsightValue(label = "BRANDS REPRESENTED", value = "${stats.distinctBrandCount}")
             }
         }
     }
 }
 
 @Composable
-private fun InsightValue(icon: androidx.compose.ui.graphics.vector.ImageVector?, label: String, value: String) {
-    val vaultColors = LocalVaultColors.current
+private fun InsightValue(label: String, value: String) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        if (icon != null) {
-            Icon(icon, contentDescription = null, tint = vaultColors.gold, modifier = Modifier.size(16.dp))
-        }
         Text(value, style = MaterialTheme.typography.titleMedium, maxLines = 1)
         Text(label, style = WatchVaultExtraType.metadata, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -292,7 +287,10 @@ private fun WishlistPreviewLine(stats: HomeStats, onOpenWishlist: () -> Unit) {
             val subtitle = if (nearest != null) "${nearest.brand} ${nearest.model}" else "${stats.wishlistCount} watched"
             Text(subtitle, style = MaterialTheme.typography.bodyMedium)
         }
-        Capsule("${stats.wishlistCount} ${if (stats.wishlistCount == 1) "ITEM" else "ITEMS"}", variant = CapsuleVariant.NEUTRAL)
+        Text(
+            "${stats.wishlistCount}",
+            style = WatchVaultExtraType.statisticLarge
+        )
     }
 }
 

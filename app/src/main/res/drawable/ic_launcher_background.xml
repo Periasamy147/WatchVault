@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Flat backdrop for the adaptive icon. The actual glyph (drawable-nodpi/ic_launcher_foreground.png)
+  is already inset within the adaptive-icon safe zone with real transparent padding around it, so
+  this only needs to fill in behind that padding — kept as the same near-black tone as the glyph's
+  own card background so every launcher mask shape (circle, squircle, rounded square, teardrop)
+  reads as one seamless icon instead of a visibly different-shaped card floating on a mismatched
+  backdrop.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#0E0D0C" />
+</shape>
